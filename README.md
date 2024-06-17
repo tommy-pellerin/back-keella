@@ -30,3 +30,14 @@ Things you may want to cover:
 - to get all workouts posted by host : user.hosted_workouts
 - to get the host of the workout : workout.host
 - to get all participant of a workout : workout.users
+
+## here are reservation possible status :
+enum :status, {
+    pending: 0,
+    accepted: 1,
+    refused: 2,
+    host_cancelled: 3,
+    user_cancelled: 4,
+    closed: 5,
+    relaunched: 6
+  }
