@@ -8,10 +8,9 @@ class CreateWorkouts < ActiveRecord::Migration[7.2]
       t.string :city
       t.string :zip_code
       t.decimal :price
-      t.integer :host_id
+      t.references :host, foreign_key: { to_table: :users }
       t.integer :max_participants
 
-      t.references :user, null: false, foreign_key: true
       t.timestamps
     end
   end
