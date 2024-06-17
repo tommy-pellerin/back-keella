@@ -17,9 +17,7 @@ class WorkoutsController < ApplicationController
   def create
     @workout = Workout.new(workout_params)
     if params[:workout][:images]
-      params[:workout][:images].each do |image|
-        @workout.images.attach(image)
-      end
+      params[:workout][:images].each { |image| @workout.images.attach(image) }
     end
   
     if @workout.save

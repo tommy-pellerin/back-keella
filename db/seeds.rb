@@ -30,33 +30,3 @@ puts 'Admin created'
 end
 puts 'Users created'
 
-25.times do
-  Workout.create(
-    title: Faker::Lorem.sentence,
-    description: Faker::Lorem.paragraph,
-    start_date: Faker::Time.forward(days: 23, period: :morning),
-    duration: rand(1.0..2.0),
-    city: Faker::Address.city,
-    zip_code: Faker::Address.zip_code,
-    price: rand(1.0..50.0),
-    max_participants: rand(1..10),
-    host: User.all.sample
-  )
-end
-puts 'Workouts created'
-
-50.times do
-  user = User.all.sample
-  workout = Workout.all.sample
-  while user == workout.host
-    workout = Workout.all.sample
-  end
-  Reservation.create(
-    user: User.all.sample,
-    workout: Workout.all.sample,
-    quantity: rand(1..10),
-    total: rand(1.0..50.0),
-    status: rand(0..2)
-  )
-end
-puts 'Reservations created'
