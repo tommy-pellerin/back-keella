@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_06_16_120914) do
+ActiveRecord::Schema[7.2].define(version: 2024_06_17_091214) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -50,6 +50,18 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_16_120914) do
     t.index ["jti"], name: "index_jwt_denylist_on_jti"
   end
 
+  create_table "reservations", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "workout_id", null: false
+    t.integer "quantity"
+    t.float "total"
+    t.integer "status"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_reservations_on_user_id"
+    t.index ["workout_id"], name: "index_reservations_on_workout_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -62,6 +74,25 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_16_120914) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "workouts", force: :cascade do |t|
+    t.string "title"
+    t.text "description"
+    t.datetime "start_date"
+    t.float "duration"
+    t.string "city"
+    t.string "zip_code"
+    t.decimal "price"
+    t.integer "host_id"
+    t.integer "max_participants"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_workouts_on_user_id"
+  end
+
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "reservations", "users"
+  add_foreign_key "reservations", "workouts"
+  add_foreign_key "workouts", "users"
 end
