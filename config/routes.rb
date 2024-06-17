@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  resources :reservations
+  resources :workouts
   resources :users, only: [ :index, :show ]
   devise_for :users, controllers: {
     sessions: "users/sessions",
