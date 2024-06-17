@@ -83,14 +83,16 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_17_113034) do
     t.string "city"
     t.string "zip_code"
     t.decimal "price"
-    t.integer "host_id", null: false
+    t.bigint "host_id"
     t.integer "max_participants"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["host_id"], name: "index_workouts_on_host_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "reservations", "users"
   add_foreign_key "reservations", "workouts"
+  add_foreign_key "workouts", "users", column: "host_id"
 end

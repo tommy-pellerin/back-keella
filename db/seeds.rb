@@ -11,8 +11,8 @@
 require 'faker'
 
 User.destroy_all
-Workout.destroy_all
 Reservation.destroy_all
+Workout.destroy_all
 
 User.create(
   username: 'admin',
@@ -21,7 +21,7 @@ User.create(
 )
 puts 'Admin created'
 
-10.times do
+20.times do
   User.create(
     username: Faker::Name.first_name,
     email: Faker::Internet.email,
@@ -46,6 +46,11 @@ end
 puts 'Workouts created'
 
 50.times do
+  user = User.all.sample
+  workout = Workout.all.sample
+  while user == workout.host
+    workout = Workout.all.sample
+  end
   Reservation.create(
     user: User.all.sample,
     workout: Workout.all.sample,
