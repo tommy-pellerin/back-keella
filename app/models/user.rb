@@ -1,5 +1,9 @@
 class User < ApplicationRecord
   after_create :send_welcome_email
+  # Quand il est host
+  has_many :workouts, foreign_key: "host_id", class_name: "Workout", dependent: :destroy
+  # Quand il est participant
+  has_many :workouts, through: :reservations
 
   def send_welcome_email
     UserMailer.welcome_email(self).deliver_now
