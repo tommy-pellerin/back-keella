@@ -94,8 +94,8 @@ Rails.application.configure do
     ActionMailer::Base.delivery_method = :smtp
     config.action_mailer.perform_deliveries = true
 
-    # dire ├á fly.io l'URL de mon app est :
-    config.action_mailer.default_url_options = { host: "rails-back-group.fly.io" }
+    # tell fly.io URL of my app is :
+    config.action_mailer.default_url_options = { host: "keella.fly.io" }
 
     ActionMailer::Base.smtp_settings = {
     user_name: ENV["MAILJET_LOGIN"],
