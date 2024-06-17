@@ -16,7 +16,12 @@ class WorkoutsController < ApplicationController
   # POST /workouts
   def create
     @workout = Workout.new(workout_params)
-
+    if params[:workout][:images]
+      params[:workout][:images].each do |image|
+        @workout.images.attach(image)
+      end
+    end
+  
     if @workout.save
       render json: @workout, status: :created, location: @workout
     else
@@ -46,6 +51,6 @@ class WorkoutsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def workout_params
-      params.require(:workout).permit(:title, :description, :start_date, :duration, :city, :zip_code, :price, :host_id, :max_participants)
+      params.require(:workout).permit(:title, :description, :start_date, :duration, :city, :zip_code, :price, :host_id, :max_participants, images: [])
     end
 end
