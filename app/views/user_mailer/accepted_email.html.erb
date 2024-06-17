@@ -5,7 +5,7 @@
     <title>Demande acceptée</title>
   </head>
   <body>
-    <h1>Salut <%= @user.pseudo %>,</h1>
+    <h1>Salut <%= @user.username %>,</h1>
     <h2>Bonne nouvelle, ta demande a été acceptée !</h2>
     <p>Nombre de place confirmé : <%= @reservation.quantity %>, vous n'avez rien à faire.</p>
     <p>Etape suivante ?</p>
@@ -14,7 +14,7 @@
       <li>Vous rendre à la séance</li>
       <li>A la fin de votre séance, veuillez confirmer que vous avez assisté à votre séance afin de remercier l’hote en débloquant votre paiement.</li>
     </ol>
-    <p>Confirmer la fin de ma séance : <a href="<%= user_reservations_url(@user, @reservation) %>">Confirmer la fin de ma séance</a></p>
+    <p>Confirmer la fin de ma séance : <a href="#">Confirmer la fin de ma séance</a></p>
     <p>Vous pouvez également copier et coller ce lien dans la barre d'adresse de votre navigateur.</p>
     <p>Sportivement,</p>
     <p>À très vite sur keella.fly.dev !</p>
