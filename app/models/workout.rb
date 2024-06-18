@@ -35,7 +35,7 @@ class Workout < ApplicationRecord
   end
 
   def image_url
-    if self.photos.attached?
+    if self.workout_images.attached?
       workout_images.first.service_url
     else
       self.category.image_url
