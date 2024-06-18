@@ -27,13 +27,13 @@ class ReservationsController < ApplicationController
     puts "#"*50
     @reservation = current_user.reservations.build(reservation_params)
     puts @reservation
-    # if @reservation.save
-    #   render json: @reservation, status: :created, location: @reservation
-    # else
-    #   render json: @reservation.errors, status: :unprocessable_entity
-    # end
+    if @reservation.save
+      render json: @reservation, status: :created, location: @reservation
+    else
+      render json: @reservation.errors, status: :unprocessable_entity
+    end
   end
-  
+
 
   # PATCH/PUT /reservations/1
   def update
