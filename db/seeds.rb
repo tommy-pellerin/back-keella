@@ -35,10 +35,10 @@ puts 'Users created'
     title: Faker::Lorem.sentence,
     description: Faker::Lorem.paragraph,
     start_date: Faker::Time.forward(days: 23, period: :morning),
-    duration: rand(1.0..2.0),
+    duration: rand(1..3)*30,
     city: Faker::Address.city,
     zip_code: Faker::Address.zip_code,
-    price: rand(1.0..50.0),
+    price: rand(1..50),
     max_participants: rand(1..10),
     host: User.all.sample
   )
