@@ -10,7 +10,11 @@ class UsersController < ApplicationController
 
   # GET /users/:id
   def show
-    render json: @user
+    if @user
+      render json: @user
+    else
+      render json: { error: "Utilisateur non trouvé" }, status: :not_found
+    end
   end
 
   private
