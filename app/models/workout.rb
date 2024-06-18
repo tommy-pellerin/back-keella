@@ -34,11 +34,11 @@ class Workout < ApplicationRecord
     end
   end
 
-  # def image_url
-  #   if self.workout_images.attached?
-  #     workout_images.first.service_url
-  #   else
-  #     self.category.image_url
-  #   end
-  # end
+  def image_url
+    if self.workout_images.attached?
+      workout_images.first.service_url
+    else
+      self.category.image_url
+    end
+  end
 end
