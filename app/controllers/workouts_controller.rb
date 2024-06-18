@@ -17,7 +17,7 @@ class WorkoutsController < ApplicationController
 
   # POST /workouts
   def create
-    @workout = Workout.new(workout_params)
+    @workout = current_user.hosted_workouts.build(workout_params)
 
     if @workout.save
       render json: @workout, status: :created, location: @workout
@@ -48,12 +48,12 @@ class WorkoutsController < ApplicationController
 
     def authorize_user!
       unless @workout.host_id == current_user.id
-        render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
+        render json: { error: "Vous n'êtes pas autorisé à faire cette action" }, status: :unauthorized
       end
     end
 
     # Only allow a list of trusted parameters through.
     def workout_params
-      params.require(:workout).permit(:title, :description, :start_date, :duration, :city, :zip_code, :price, :host_id, :max_participants)
+      params.require(:workout).permit(:title, :description, :start_date, :duration, :city, :zip_code, :price, :host_id, :max_participants, photos: [])
     end
 end
