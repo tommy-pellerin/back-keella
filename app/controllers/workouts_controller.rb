@@ -55,6 +55,29 @@ class WorkoutsController < ApplicationController
   def destroy
     @workout.destroy!
   end
+  
+  # GET /workouts/search
+  def search
+    @workouts = Workout.all
+
+    if params[:city].present?
+      @workouts = @workouts.where(city: params[:city])
+    end
+
+    if params[:date].present?
+      @workouts = @workouts.where(start_date: params[:date])
+    end
+
+    if params[:tags].present?
+      @workouts = @workouts.where('tags @> ARRAY[?]::varchar[]', params[:tags].split(','))
+    end
+
+    if params[:participants].present?
+      @workouts = @workouts.where('max_participants >= ?', params[:participants].to_i)
+    end
+    
+    render json: @workouts
+  end
 
   private
 

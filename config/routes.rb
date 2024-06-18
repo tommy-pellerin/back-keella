@@ -1,7 +1,12 @@
 Rails.application.routes.draw do
   resources :categories
   resources :reservations
-  resources :workouts
+  #resources :workouts
+  resources :workouts do
+    collection do
+      get 'search'
+    end
+  end
   resources :users, only: [ :index, :show ]
   devise_for :users, controllers: {
     sessions: "users/sessions",
