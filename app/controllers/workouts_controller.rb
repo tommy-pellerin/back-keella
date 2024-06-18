@@ -12,7 +12,13 @@ class WorkoutsController < ApplicationController
 
   # GET /workouts/1
   def show
-    render json: @workout
+    # if @workout.image.attached?
+    #   render json: @workout.as_json.merge({
+    #     image_url: rails_blob_url(@workout.image, only_path: true)
+    #   })
+    # else
+      render json: @workout.as_json(include: { host: { only: [:username, :id] } })
+    # end
   end
 
   # POST /workouts
