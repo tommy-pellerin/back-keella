@@ -9,6 +9,7 @@
 #   end
 
 require 'faker'
+Faker::Config.locale = 'fr'
 
 User.destroy_all
 Reservation.destroy_all
