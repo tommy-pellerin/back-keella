@@ -83,6 +83,19 @@ RSpec.describe "/reservations", type: :request do
         expect(response.content_type).to match(a_string_including("application/json"))
       end
     end
+
+    context "when user is not signed in" do
+      before do
+        sign_out user
+      end
+
+      it "does not create a new Reservation" do
+        expect {
+          post reservations_path,
+               params: { reservation: valid_attributes }, headers: valid_headers, as: :json
+        }.to change(Reservation, :count).by(0)
+      end
+    end
   end
 
   describe "PATCH /update" do
@@ -121,6 +134,37 @@ RSpec.describe "/reservations", type: :request do
               params: { reservation: invalid_attributes }, headers: valid_headers
         expect(response).to have_http_status(422)
         expect(response.content_type).to match(a_string_including("application/json"))
+      end
+    end
+
+    context "when user is not signed in" do
+      before do
+        sign_out user
+      end
+
+      it "does not update the requested reservation" do
+        reservation = create(:reservation, valid_attributes)
+        patch reservation_path(reservation),
+              params: { reservation: valid_attributes }, headers: valid_headers
+        reservation.reload
+        expect(reservation.quantity).to eq(1)
+        expect(reservation.total).to eq(20)
+      end
+    end
+
+    context "when user is not the owner of the reservation" do
+      before do
+        sign_out user
+        sign_in create(:user)
+      end
+
+      it "does not update the requested reservation" do
+        reservation = create(:reservation, valid_attributes)
+        patch reservation_path(reservation),
+          params: { reservation: valid_attributes }, headers: valid_headers
+        reservation.reload
+        expect(reservation.quantity).to eq(1)
+        expect(reservation.total).to eq(20)
       end
     end
   end

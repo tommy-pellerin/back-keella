@@ -1,6 +1,7 @@
 FactoryBot.define do
   factory :workout do
     association :host, factory: :user
+    association :category, factory: :category
     title { Faker::Lorem.sentence }
     description { Faker::Lorem.paragraph }
     price { 20 }
