@@ -1,5 +1,7 @@
 class ReservationsController < ApplicationController
   before_action :set_reservation, only: %i[ show update destroy ]
+  before_action :authenticate_user!, only: %i[ create update destroy ]
+  before_action :authorize_user!, only: %i[ update destroy ]
 
   # GET /reservations
   def index
@@ -15,7 +17,7 @@ class ReservationsController < ApplicationController
 
   # POST /reservations
   def create
-    @reservation = Reservation.new(reservation_params)
+    @reservation = current_user.reservations.build(reservation_params)
 
     if @reservation.save
       render json: @reservation, status: :created, location: @reservation
@@ -42,6 +44,12 @@ class ReservationsController < ApplicationController
     # Use callbacks to share common setup or constraints between actions.
     def set_reservation
       @reservation = Reservation.find(params[:id])
+    end
+
+    def authorize_user!
+      unless @reservation.user_id == current_user.id
+        render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
+      end
     end
 
     # Only allow a list of trusted parameters through.
