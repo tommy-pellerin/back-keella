@@ -4,7 +4,7 @@ class Workout < ApplicationRecord
   has_many :reservations, dependent: :destroy
   has_many :participants, through: :reservations, source: :user
 
-  has_many_attached :photos
+  has_many_attached :workout_images
 
   # Validations
   validates :host, presence: true
@@ -35,8 +35,8 @@ class Workout < ApplicationRecord
   end
 
   def image_url
-    if self.photos.attached?
-      photos.first.service_url
+    if self.workout_images.attached?
+      workout_images.first.service_url
     else
       self.category.image_url
     end
