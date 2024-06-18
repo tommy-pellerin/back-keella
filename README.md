@@ -29,7 +29,7 @@ Things you may want to cover:
 - to get all reservations of a user : user.reservations
 - to get all workouts posted by host : user.hosted_workouts
 - to get the host of the workout : workout.host
-- to get all participant of a workout : workout.users
+- to get all participant of a workout : workout.participants
 
 ## here are reservation possible status :
 enum :status, {
