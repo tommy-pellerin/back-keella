@@ -30,6 +30,14 @@ puts 'Admin created'
 end
 puts 'Users created'
 
+categories = [ 'Yoga', 'Crossfit', 'Boxing', 'Course', 'Dance', 'Meditation', 'Pilates', 'Velos', 'Escalade', 'Gymnastique', 'Randonnees', 'Natation', 'Tennis', 'Football', 'Basketball', 'Volleyball', 'Handball', 'Rugby', 'Golf', 'Equitation' ]
+categories.each do |category|
+  Category.create(
+    name: category
+  )
+end
+puts 'Categories created'
+
 25.times do
   Workout.create(
     title: Faker::Lorem.sentence,
@@ -40,7 +48,8 @@ puts 'Users created'
     zip_code: Faker::Address.zip_code,
     price: rand(1..50),
     max_participants: rand(1..10),
-    host: User.all.sample
+    host: User.all.sample,
+    category: Category.all.sample
   )
 end
 puts 'Workouts created'
