@@ -2,6 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "/workouts", type: :request do
     let(:user) { create(:user) }
+    let(:category) { create(:category) }
     let(:valid_attributes) do
       {
         title: "workout",
@@ -12,7 +13,8 @@ RSpec.describe "/workouts", type: :request do
         zip_code: "zip_code",
         price: 10,
         host_id: user.id,
-        max_participants: 5
+        max_participants: 5,
+        category_id: category.id
       }
     end
 
@@ -29,6 +31,12 @@ RSpec.describe "/workouts", type: :request do
         max_participants: 5
       }
     end
+
+    let(:valid_headers) do {
+    ACCEPT: "multipart/form-data"
+    }
+    end
+
 
   before do
     sign_in user
@@ -69,6 +77,7 @@ RSpec.describe "/workouts", type: :request do
       expect(response.body).to include(workout.price.to_s)
       expect(response.body).to include(workout.host_id.to_s)
       expect(response.body).to include(workout.max_participants.to_s)
+      expect(response.body).to include(workout.category_id.to_s)
     end
   end
 
@@ -76,12 +85,12 @@ RSpec.describe "/workouts", type: :request do
     context "with valid parameters" do
       it "creates a new Workout" do
         expect {
-          post workouts_path, params: { workout: valid_attributes }, headers: { "Accept" => "application/json" }}.to change(Workout, :count).by(1)
+          post workouts_path, params: { workout: valid_attributes }, headers: valid_headers }.to change(Workout, :count).by(1)
         expect(response).to have_http_status(:created)
       end
 
       it "renders a JSON response with the new workout" do
-        post workouts_path, params: { workout: valid_attributes }, headers: { "Accept" => "application/json" }
+        post workouts_path, params: { workout: valid_attributes }, headers: valid_headers
         expect(response).to have_http_status(:created)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
@@ -91,13 +100,13 @@ RSpec.describe "/workouts", type: :request do
       it "does not create a new Workout" do
         expect {
           post workouts_path,
-              params: { workout: invalid_attributes }, headers: { "Accept" => "application/json" }
+              params: { workout: invalid_attributes }, headers: valid_headers
         }.to change(Workout, :count).by(0)
       end
 
       it "renders a JSON response with errors for the new workout" do
         post workouts_path,
-            params: { workout: invalid_attributes }, headers: { "Accept" => "application/json" }
+            params: { workout: invalid_attributes }, headers: valid_headers
         expect(response).to have_http_status(422)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
@@ -117,7 +126,7 @@ RSpec.describe "/workouts", type: :request do
         workout = create(:workout, valid_attributes)
         sign_in workout.host
         patch workout_path(workout),
-              params: { workout: new_attributes }, headers: { "Accept" => "application/json" }
+              params: { workout: new_attributes }, headers: valid_headers
         workout.reload
         expect(workout.title).to eq("new_workout")
         expect(workout.description).to eq("new_description")
@@ -127,7 +136,7 @@ RSpec.describe "/workouts", type: :request do
         workout = create(:workout, valid_attributes)
         sign_in workout.host
         patch workout_path(workout),
-              params: { workout: new_attributes }, headers: { "Accept" => "application/json" }
+              params: { workout: new_attributes }, headers: valid_headers
         expect(response).to have_http_status(:ok)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
@@ -137,7 +146,7 @@ RSpec.describe "/workouts", type: :request do
       it "renders a JSON response with errors for the workout" do
         workout = create(:workout, valid_attributes)
         patch workout_path(workout),
-              params: { workout: invalid_attributes }, headers: { "Accept" => "application/json" }
+              params: { workout: invalid_attributes }, headers: valid_headers
         expect(response).to have_http_status(422)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
@@ -149,7 +158,7 @@ RSpec.describe "/workouts", type: :request do
       workout = create(:workout, valid_attributes)
       sign_in workout.host
       expect {
-        delete workout_path(workout), headers: { "Accept" => "application/json" }}.to change(Workout, :count).by(-1)
+        delete workout_path(workout), headers: valid_headers }.to change(Workout, :count).by(-1)
     end
   end
 end
