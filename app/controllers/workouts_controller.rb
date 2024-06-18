@@ -65,6 +65,10 @@ class WorkoutsController < ApplicationController
     end
 
     def authorize_user!
+      if current_user.isAdmin?
+        return
+      end
+
       unless @workout.host_id == current_user.id
         render json: { error: "Vous n'êtes pas autorisé à faire cette action" }, status: :unauthorized
       end
