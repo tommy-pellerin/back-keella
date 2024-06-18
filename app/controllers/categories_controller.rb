@@ -3,6 +3,7 @@ class CategoriesController < ApplicationController
   before_action :authenticate_user!
   before_action :authorize_admin!, only: %i[ create update destroy ]
 
+
   # GET /categories
   def index
     @categories = Category.all

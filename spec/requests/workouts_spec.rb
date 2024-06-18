@@ -2,6 +2,7 @@ require 'rails_helper'
 
 RSpec.describe "/workouts", type: :request do
     let(:user) { create(:user) }
+
     let(:category) { create(:category) }
     let(:valid_attributes) do
       {
@@ -13,8 +14,8 @@ RSpec.describe "/workouts", type: :request do
         zip_code: "zip_code",
         price: 10,
         host_id: user.id,
-        max_participants: 5,
         category_id: category.id
+        max_participants: 5
       }
     end
 
@@ -32,12 +33,11 @@ RSpec.describe "/workouts", type: :request do
       }
     end
 
+
     let(:valid_headers) do {
     ACCEPT: "multipart/form-data"
     }
     end
-
-
   before do
     sign_in user
   end
@@ -85,11 +85,13 @@ RSpec.describe "/workouts", type: :request do
     context "with valid parameters" do
       it "creates a new Workout" do
         expect {
+
           post workouts_path, params: { workout: valid_attributes }, headers: valid_headers }.to change(Workout, :count).by(1)
         expect(response).to have_http_status(:created)
       end
 
       it "renders a JSON response with the new workout" do
+
         post workouts_path, params: { workout: valid_attributes }, headers: valid_headers
         expect(response).to have_http_status(:created)
         expect(response.content_type).to match(a_string_including("application/json"))

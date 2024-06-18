@@ -1,6 +1,10 @@
 class Workout < ApplicationRecord
   belongs_to :host, class_name: "User"
+  belongs_to :category
   has_many :reservations, dependent: :destroy
+  has_many :participants, through: :reservations, source: :user
+
+  has_many_attached :workout_images
 
   # Validations
   validates :host, presence: true
@@ -27,6 +31,14 @@ class Workout < ApplicationRecord
   def duration_must_be_multiple_of_30
     if duration.present? && duration % 30 != 0
       errors.add(:duration, "doit être un multiple de 30 minutes")
+    end
+  end
+
+  def image_url
+    if self.workout_images.attached?
+      workout_images.first.service_url
+    else
+      self.category.image_url
     end
   end
 end
