@@ -50,7 +50,7 @@ class WorkoutsController < ApplicationController
   private
 
   def authorize_user
-    if @workout && @workout.user_id != current_user.id
+    if @workout && @workout.host_id != current_user.id
       render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
     end
   end
@@ -59,11 +59,11 @@ class WorkoutsController < ApplicationController
       @workout = Workout.find(params[:id])
     end
 
-    def authorize_user!
-      unless @workout.host_id == current_user.id
-        render json: { error: "Vous n'êtes pas autorisé à faire cette action" }, status: :unauthorized
-      end
-    end
+    # def authorize_user!
+    #   unless @workout.host_id == current_user.id
+    #     render json: { error: "Vous n'êtes pas autorisé à faire cette action" }, status: :unauthorized
+    #   end
+    # end
 
     # Only allow a list of trusted parameters through.
     def workout_params
