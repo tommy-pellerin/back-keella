@@ -4,7 +4,7 @@ class Workout < ApplicationRecord
   has_many :reservations, dependent: :destroy
   has_many :participants, through: :reservations, source: :user
 
-  has_many_attached :photos
+  has_many_attached :workout_images
 
   # Validations
   validates :host, presence: true
@@ -19,6 +19,18 @@ class Workout < ApplicationRecord
 
   validate :start_date_must_be_at_least_4_hours_from_now
   validate :duration_must_be_multiple_of_30
+
+  def end_date
+    self.start_date + (self.duration * 60) # en minute
+  end
+
+  def available_places
+    if self.reservations
+      self.max_participants - self.participants.length
+    else
+      self.max_participants
+    end
+  end
 
   private
 
@@ -35,8 +47,8 @@ class Workout < ApplicationRecord
   end
 
   def image_url
-    if self.photos.attached?
-      photos.first.service_url
+    if self.workout_images.attached?
+      workout_images.first.service_url
     else
       self.category.image_url
     end

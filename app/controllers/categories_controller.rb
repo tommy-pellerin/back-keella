@@ -1,5 +1,8 @@
 class CategoriesController < ApplicationController
   before_action :set_category, only: %i[ show update destroy ]
+  before_action :authenticate_user!
+  before_action :authorize_admin!, only: %i[ create update destroy ]
+
 
   # GET /categories
   def index
@@ -44,8 +47,12 @@ class CategoriesController < ApplicationController
       @category = Category.find(params[:id])
     end
 
+    def authorize_admin!
+      render json: { error: "Vous n'êtes pas autorisé à acceder à cette page." }, status: :unauthorized unless current_user.isAdmin?
+    end
+
     # Only allow a list of trusted parameters through.
     def category_params
-      params.require(:category).permit(:name, :image)
+      params.require(:category).permit(:name, :category_image)
     end
 end
