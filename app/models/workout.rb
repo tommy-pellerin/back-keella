@@ -2,6 +2,7 @@ class Workout < ApplicationRecord
   belongs_to :host, class_name: "User"
   belongs_to :category
   has_many :reservations, dependent: :destroy
+  has_many :participants, through: :reservations, source: :user
 
   has_many_attached :images
 

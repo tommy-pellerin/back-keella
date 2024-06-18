@@ -18,6 +18,7 @@ User.create(
   username: 'admin',
   email: 'admin@admin.fr',
   password: 'admin123',
+  isAdmin: true
 )
 puts 'Admin created'
 
@@ -56,15 +57,16 @@ puts 'Workouts created'
 
 50.times do
   user = User.all.sample
+  quantity = rand(1..10)
   workout = Workout.all.sample
   while user == workout.host
     workout = Workout.all.sample
   end
   Reservation.create(
-    user: User.all.sample,
-    workout: Workout.all.sample,
-    quantity: rand(1..10),
-    total: rand(1.0..50.0),
+    user: user,
+    workout: workout,
+    quantity: quantity,
+    total: workout.price * quantity,
     status: rand(0..2)
   )
 end
