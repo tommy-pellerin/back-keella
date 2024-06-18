@@ -60,10 +60,19 @@ RSpec.describe Reservation, type: :model do
 
     it "is not valid if the workout is already full" do
       workout.max_participants.times do
-        create(:reservation, workout: workout)
+        create(:reservation, workout: workout, quantity: 1)
       end
       new_reservation = build(:reservation, user: user, workout: workout)
       expect(new_reservation).to_not be_valid
+    end
+
+    it 'is not valid if the quantity exceeds the available places' do
+      workout.max_participants.times do |i|
+          create(:reservation, workout: workout, quantity: 1) if i < workout.max_participants - 1
+      end
+      new_reservation = build(:reservation, user: user, workout: workout, quantity: 2)
+      expect(new_reservation).to_not be_valid
+      expect(new_reservation.errors.messages[:quantity]).to include("Il n'y a pas assez de places disponibles")
     end
 
     it "is not valid if the workout is past" do

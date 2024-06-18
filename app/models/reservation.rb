@@ -15,6 +15,7 @@ class Reservation < ApplicationRecord
   validate :no_overlap
   validate :already_full
   validate :past_workout
+  validate :quantity_does_not_exceed_available_places
 
   private
 
@@ -51,8 +52,17 @@ class Reservation < ApplicationRecord
     end
   end
 
+  def available_places
+    workout.present? ? workout.max_participants - workout.reservations.sum(:quantity) : 0
+  end
+
   def already_full
-    errors.add(:base, "La séance de sport est complète") if workout.present? && workout.reservations.count >= workout.max_participants
+    errors.add(:base, "La séance de sport est complète") if available_places <= 0
+  end
+
+  def quantity_does_not_exceed_available_places
+    return unless workout.present? && quantity.present?
+    errors.add(:quantity, "Il n'y a pas assez de places disponibles") if quantity > available_places
   end
 
   def past_workout
