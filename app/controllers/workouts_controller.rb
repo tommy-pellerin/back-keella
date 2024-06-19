@@ -45,7 +45,9 @@ class WorkoutsController < ApplicationController
 
   # PATCH/PUT /workouts/1
   def update
-    if @workout.update(workout_params)
+    if @workout.reservations.any? && !current_user.isAdmin?
+      render json: { error: "Vous ne pouvez pas modifier un workout qui a déjà des réservations" }, status: :unauthorized
+    elsif @workout.update(workout_params)
       render json: @workout
     else
       render json: @workout.errors, status: :unprocessable_entity

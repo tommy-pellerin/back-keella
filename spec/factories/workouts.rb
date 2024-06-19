@@ -9,6 +9,6 @@ FactoryBot.define do
     start_date { Faker::Time.forward(days: 3, period: :evening) }
     duration { 30 }
     city { Faker::Address.city }
-    zip_code { Faker::Address.zip_code }
+    zip_code { 12345 }
   end
 end
