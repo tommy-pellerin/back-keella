@@ -1,34 +1,47 @@
+
 require 'rails_helper'
 
 RSpec.describe "/workouts", type: :request do
-    let(:user) { create(:user) }
-    let(:valid_attributes) do
-      {
-        title: "workout",
-        description: "description",
-        start_date: Time.now + 1.day,
-        duration: 60,
-        city: "city",
-        zip_code: "zip_code",
-        price: 10,
-        host_id: user.id,
-        max_participants: 5
-      }
-    end
+  let(:user) { create(:user) }
+  let(:user1) { create(:user) }
+  let(:admin) { create(:user, isAdmin: true) }
 
-    let(:invalid_attributes) do
-      {
-        title: nil,
-        description: "description",
-        start_date: Time.now,
-        duration: 60,
-        city: "city",
-        zip_code: "zip_code",
-        price: 10,
-        host_id: user.id,
-        max_participants: 5
-      }
-    end
+  let(:category) { create(:category) }
+  let(:valid_attributes) do
+    {
+      title: "workout",
+      description: "description",
+      start_date: Time.now + 1.day,
+      duration: 60,
+      city: "city",
+      zip_code: "zip_code",
+      price: 10,
+      host_id: user.id,
+      category_id: category.id,
+      max_participants: 5
+    }
+  end
+
+  let(:invalid_attributes) do
+    {
+      title: nil,
+      description: "description",
+      start_date: Time.now,
+      duration: 60,
+      city: "city",
+      zip_code: "zip_code",
+      price: 10,
+      host_id: user.id,
+      max_participants: 5
+    }
+  end
+
+  let(:valid_headers) do
+    {
+      "ACCEPT" => "application/json",
+      "Content-Type" => "application/json"
+    }
+  end
 
   before do
     sign_in user
@@ -36,8 +49,7 @@ RSpec.describe "/workouts", type: :request do
 
   describe "GET /workouts" do
     it "renders a successful response" do
-      get "/workouts"
-
+      get workouts_path, headers: valid_headers
       expect(response).to be_successful
     end
 
@@ -45,7 +57,7 @@ RSpec.describe "/workouts", type: :request do
       workout1 = create(:workout, title: "workout1")
       workout2 = create(:workout, title: "workout2")
 
-      get "/workouts"
+      get workouts_path, headers: valid_headers
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to include(workout1.title)
@@ -57,7 +69,7 @@ RSpec.describe "/workouts", type: :request do
     it "renders a successful response" do
       workout = create(:workout)
 
-      get "/workouts/#{workout.id}"
+      get workout_path(workout), headers: valid_headers
 
       expect(response).to be_successful
       expect(response.body).to include(workout.title)
@@ -69,6 +81,7 @@ RSpec.describe "/workouts", type: :request do
       expect(response.body).to include(workout.price.to_s)
       expect(response.body).to include(workout.host_id.to_s)
       expect(response.body).to include(workout.max_participants.to_s)
+      expect(response.body).to include(workout.category_id.to_s)
     end
   end
 
@@ -76,12 +89,13 @@ RSpec.describe "/workouts", type: :request do
     context "with valid parameters" do
       it "creates a new Workout" do
         expect {
-          post workouts_path, params: { workout: valid_attributes }, headers: { "Accept" => "application/json" }}.to change(Workout, :count).by(1)
+          post workouts_path, params: { workout: valid_attributes }.to_json, headers: valid_headers
+        }.to change(Workout, :count).by(1)
         expect(response).to have_http_status(:created)
       end
 
       it "renders a JSON response with the new workout" do
-        post workouts_path, params: { workout: valid_attributes }, headers: { "Accept" => "application/json" }
+        post workouts_path, params: { workout: valid_attributes }.to_json, headers: valid_headers
         expect(response).to have_http_status(:created)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
@@ -90,15 +104,31 @@ RSpec.describe "/workouts", type: :request do
     context "with invalid parameters" do
       it "does not create a new Workout" do
         expect {
-          post workouts_path,
-              params: { workout: invalid_attributes }, headers: { "Accept" => "application/json" }
+          post workouts_path, params: { workout: invalid_attributes }.to_json, headers: valid_headers
         }.to change(Workout, :count).by(0)
       end
 
       it "renders a JSON response with errors for the new workout" do
-        post workouts_path,
-            params: { workout: invalid_attributes }, headers: { "Accept" => "application/json" }
+        post workouts_path, params: { workout: invalid_attributes }.to_json, headers: valid_headers
         expect(response).to have_http_status(422)
+        expect(response.content_type).to match(a_string_including("application/json"))
+      end
+    end
+
+    context "when user is not signed in" do
+      before do
+        sign_out user
+      end
+
+      it "does not create a new Workout" do
+        expect {
+          post workouts_path, params: { workout: valid_attributes }.to_json, headers: valid_headers
+        }.to change(Workout, :count).by(0)
+      end
+
+      it "renders a JSON response with errors for the new workout" do
+        post workouts_path, params: { workout: valid_attributes }.to_json, headers: valid_headers
+        expect(response).to have_http_status(401)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
     end
@@ -116,8 +146,7 @@ RSpec.describe "/workouts", type: :request do
       it "updates the requested workout" do
         workout = create(:workout, valid_attributes)
         sign_in workout.host
-        patch workout_path(workout),
-              params: { workout: new_attributes }, headers: { "Accept" => "application/json" }
+        patch workout_path(workout), params: { workout: new_attributes }.to_json, headers: valid_headers
         workout.reload
         expect(workout.title).to eq("new_workout")
         expect(workout.description).to eq("new_description")
@@ -126,8 +155,7 @@ RSpec.describe "/workouts", type: :request do
       it "renders a JSON response with the workout" do
         workout = create(:workout, valid_attributes)
         sign_in workout.host
-        patch workout_path(workout),
-              params: { workout: new_attributes }, headers: { "Accept" => "application/json" }
+        patch workout_path(workout), params: { workout: new_attributes }.to_json, headers: valid_headers
         expect(response).to have_http_status(:ok)
         expect(response.content_type).to match(a_string_including("application/json"))
       end
@@ -136,10 +164,82 @@ RSpec.describe "/workouts", type: :request do
     context "with invalid parameters" do
       it "renders a JSON response with errors for the workout" do
         workout = create(:workout, valid_attributes)
-        patch workout_path(workout),
-              params: { workout: invalid_attributes }, headers: { "Accept" => "application/json" }
+        patch workout_path(workout), params: { workout: invalid_attributes }.to_json, headers: valid_headers
         expect(response).to have_http_status(422)
         expect(response.content_type).to match(a_string_including("application/json"))
+      end
+    end
+
+    context "when user is not signed in" do
+      before do
+        sign_out user
+      end
+
+      it "does not update the requested workout" do
+        workout = create(:workout, valid_attributes)
+        patch workout_path(workout), params: { workout: new_attributes }.to_json, headers: valid_headers
+        workout.reload
+        expect(workout.title).to eq("workout")
+        expect(workout.description).to eq("description")
+      end
+
+      it "renders a JSON response with errors for the workout" do
+        workout = create(:workout, valid_attributes)
+        patch workout_path(workout), params: { workout: new_attributes }.to_json, headers: valid_headers
+        expect(response).to have_http_status(401)
+        expect(response.content_type).to match(a_string_including("application/json"))
+      end
+    end
+
+    context "when user is not the host of the workout" do
+      before do
+        sign_out user
+        sign_in user1
+      end
+
+      it "does not update the requested workout" do
+        workout = create(:workout, valid_attributes)
+        patch workout_path(workout), params: { workout: new_attributes }.to_json, headers: valid_headers
+        workout.reload
+        expect(workout.title).to eq("workout")
+        expect(workout.description).to eq("description")
+      end
+
+      it "renders a JSON response with errors for the workout" do
+        workout = create(:workout, valid_attributes)
+        patch workout_path(workout), params: { workout: new_attributes }.to_json, headers: valid_headers
+        expect(response).to have_http_status(401)
+        expect(response.content_type).to match(a_string_including("application/json"))
+      end
+    end
+
+    context "when user is an admin" do
+      before do
+        sign_out user
+        sign_in admin
+      end
+
+      it "updates the requested workout with valid_attributes" do
+        workout = create(:workout, valid_attributes)
+        patch workout_path(workout), params: { workout: new_attributes }.to_json, headers: valid_headers
+        workout.reload
+        expect(workout.title).to eq("new_workout")
+        expect(workout.description).to eq("new_description")
+      end
+
+      it "renders a JSON response with the workout" do
+        workout = create(:workout, valid_attributes)
+        patch workout_path(workout), params: { workout: new_attributes }.to_json, headers: valid_headers
+        expect(response).to have_http_status(:ok)
+        expect(response.content_type).to match(a_string_including("application/json"))
+      end
+
+      it "does not update the requested workout with invalid_attributes" do
+        workout = create(:workout, valid_attributes)
+        patch workout_path(workout), params: { workout: invalid_attributes }.to_json, headers: valid_headers
+        workout.reload
+        expect(workout.title).to eq("workout")
+        expect(workout.description).to eq("description")
       end
     end
   end
@@ -149,7 +249,56 @@ RSpec.describe "/workouts", type: :request do
       workout = create(:workout, valid_attributes)
       sign_in workout.host
       expect {
-        delete workout_path(workout), headers: { "Accept" => "application/json" }}.to change(Workout, :count).by(-1)
+        delete workout_path(workout), headers: valid_headers
+      }.to change(Workout, :count).by(-1)
+    end
+
+    context "when user is not signed in" do
+      before do
+        sign_out user
+      end
+
+      it "does not destroy the requested workout" do
+        workout = create(:workout, valid_attributes)
+        expect {
+          delete workout_path(workout), headers: valid_headers
+        }.to change(Workout, :count).by(0)
+      end
+    end
+
+    context "when user is not the host of the workout" do
+      before do
+        sign_out user
+        sign_in user1
+      end
+
+      it "does not destroy the requested workout" do
+        workout = create(:workout, valid_attributes)
+        expect {
+          delete workout_path(workout), headers: valid_headers
+        }.to change(Workout, :count).by(0)
+      end
+
+      it "renders a JSON response with errors for the workout" do
+        workout = create(:workout, valid_attributes)
+        delete workout_path(workout), headers: valid_headers
+        expect(response).to have_http_status(401)
+        expect(response.content_type).to match(a_string_including("application/json"))
+      end
+    end
+
+    context "when user is an admin" do
+      before do
+        sign_out user
+        sign_in admin
+      end
+
+      it "destroys the requested workout" do
+        workout = create(:workout, valid_attributes)
+        expect {
+          delete workout_path(workout), headers: valid_headers
+        }.to change(Workout, :count).by(-1)
+      end
     end
   end
 end

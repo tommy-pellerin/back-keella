@@ -9,6 +9,7 @@
 #   end
 
 require 'faker'
+Faker::Config.locale = 'fr'
 
 User.destroy_all
 Reservation.destroy_all
@@ -21,6 +22,8 @@ User.create(
   isAdmin: true
 )
 puts 'Admin created'
+
+ActionMailer::Base.perform_deliveries = false
 
 20.times do
   User.create(
@@ -55,6 +58,8 @@ puts 'Categories created'
 end
 puts 'Workouts created'
 
+
+
 50.times do
   user = User.all.sample
   quantity = rand(1..10)
@@ -70,4 +75,6 @@ puts 'Workouts created'
     status: rand(0..2)
   )
 end
+
+ActionMailer::Base.perform_deliveries = true
 puts 'Reservations created'

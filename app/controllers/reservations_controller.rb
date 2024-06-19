@@ -2,6 +2,7 @@ class ReservationsController < ApplicationController
   before_action :set_reservation, only: %i[ show update destroy ]
   before_action :authenticate_user!, only: %i[ create update destroy ]
   before_action :authorize_user!, only: %i[ update destroy ]
+  before_action :authorize_update, only: %i[ update ]
 
   # GET /reservations
   def index
@@ -18,7 +19,6 @@ class ReservationsController < ApplicationController
   # POST /reservations
   def create
     @reservation = current_user.reservations.build(reservation_params)
-
     if @reservation.save
       render json: @reservation, status: :created, location: @reservation
     else
@@ -26,9 +26,16 @@ class ReservationsController < ApplicationController
     end
   end
 
+
   # PATCH/PUT /reservations/1
   def update
-    if @reservation.update(reservation_params)
+    if @reservation_updatable_attributes.include?("status")
+      if @reservation.update(reservation_update_params)
+      render json: @reservation
+      else
+        render json: @reservation.errors, status: :unprocessable_entity
+      end
+    elsif @reservation.update(reservation_update_params)
       render json: @reservation
     else
       render json: @reservation.errors, status: :unprocessable_entity
@@ -52,8 +59,23 @@ class ReservationsController < ApplicationController
       end
     end
 
+    def authorize_update
+      if current_user == @reservation.workout.host
+          @reservation_updatable_attributes = [ "status" ]
+      elsif current_user == @reservation.user
+          @reservation_updatable_attributes = [ "quantity" ]
+      else
+          render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
+      end
+    end
+
     # Only allow a list of trusted parameters through.
     def reservation_params
-      params.require(:reservation).permit(:user_id, :workout_id, :quantity, :total)
+      params.require(:reservation).permit(:workout_id, :quantity, :total, :status)
+    end
+
+    def reservation_update_params
+      params.require(:reservation).permit(@reservation_updatable_attributes)
+
     end
 end

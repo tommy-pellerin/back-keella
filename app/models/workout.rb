@@ -20,6 +20,18 @@ class Workout < ApplicationRecord
   validate :start_date_must_be_at_least_4_hours_from_now
   validate :duration_must_be_multiple_of_30
 
+  def end_date
+    self.start_date + (self.duration * 60) # en minute
+  end
+
+  def available_places
+    if self.reservations
+      self.max_participants - self.participants.length
+    else
+      self.max_participants
+    end
+  end
+
   private
 
   def start_date_must_be_at_least_4_hours_from_now

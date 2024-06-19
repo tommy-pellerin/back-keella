@@ -50,3 +50,5 @@ gem "faker"
 gem "table_print"
 
 gem "letter_opener"
+
+gem "dockerfile-rails", ">= 1.6", :group => :development
