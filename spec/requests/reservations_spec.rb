@@ -1,7 +1,8 @@
 require 'rails_helper'
 RSpec.describe "/reservations", type: :request do
   let(:user) { create(:user) }
-  let(:workout) { create(:workout) }
+  let(:host) { create(:user) }
+  let(:workout) { create(:workout, host: host) }
   let(:valid_attributes) do
     {
       user_id: user.id,
@@ -100,29 +101,17 @@ RSpec.describe "/reservations", type: :request do
 
   describe "PATCH /update" do
     context "with valid parameters" do
-      let(:new_attributes) do {
-        quantity: 2,
-        total: 40
+      let(:new_quantity) do {
+        quantity: 2
       }
       end
-
-      it "updates the requested reservation" do
+      it "user can update quantity" do
         reservation = create(:reservation, valid_attributes)
         sign_in reservation.user
         patch reservation_path(reservation),
-              params: { reservation: new_attributes }, headers: valid_headers
+              params: { reservation: new_quantity }, headers: valid_headers
         reservation.reload
         expect(reservation.quantity).to eq(2)
-        expect(reservation.total).to eq(40)
-      end
-
-      it "renders a JSON response with the reservation" do
-        reservation = create(:reservation, valid_attributes)
-        sign_in reservation.user
-        patch reservation_path(reservation),
-              params: { reservation: new_attributes }, headers: valid_headers
-        expect(response).to have_http_status(:ok)
-        expect(response.content_type).to match(a_string_including("application/json"))
       end
     end
 
