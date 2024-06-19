@@ -78,7 +78,7 @@ class ReservationsController < ApplicationController
       puts "#"*50
       puts @builded_reservation.quantity
       puts @workout
-      if @workout.available_places - @builded_reservation.quantity > 0
+      if @workout.available_places - @builded_reservation.quantity >= 0
         puts "Des places sont disponible"
         true
       else
