@@ -8,10 +8,10 @@ class Workout < ApplicationRecord
 
   # Validations
   validates :host, presence: true
-  validates :title, presence: true
-  validates :description, presence: true
-  validates :city, presence: true
-  validates :zip_code, presence: true
+  validates :title, presence: true, length: { minimum: 3, maximum: 50 }
+  validates :description, presence: true, length: { minimum: 10, maximum: 1000 }
+  validates :city, presence: true, length: { minimum: 3, maximum: 50 }
+  validates :zip_code, presence: true, length: { is: 5 }
   validates :price, presence: true, numericality: { greater_than_or_equal_to: 0, less_than_or_equal_to: 100 }
   validates :start_date, presence: true
   validates :duration, presence: true, numericality: { greater_than_or_equal_to: 30 }

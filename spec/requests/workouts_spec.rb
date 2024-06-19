@@ -14,7 +14,7 @@ RSpec.describe "/workouts", type: :request do
       start_date: Time.now + 1.day,
       duration: 60,
       city: "city",
-      zip_code: "zip_code",
+      zip_code: "12345",
       price: 10,
       host_id: user.id,
       category_id: category.id,
@@ -29,7 +29,7 @@ RSpec.describe "/workouts", type: :request do
       start_date: Time.now,
       duration: 60,
       city: "city",
-      zip_code: "zip_code",
+      zip_code: "12345",
       price: 10,
       host_id: user.id,
       max_participants: 5
@@ -143,13 +143,23 @@ RSpec.describe "/workouts", type: :request do
     end
 
     context "with valid parameters" do
-      it "updates the requested workout" do
+      it "updates the requested workout without reservation" do
         workout = create(:workout, valid_attributes)
         sign_in workout.host
         patch workout_path(workout), params: { workout: new_attributes }.to_json, headers: valid_headers
         workout.reload
         expect(workout.title).to eq("new_workout")
         expect(workout.description).to eq("new_description")
+      end
+
+      it "does not updates the requested workout with active reservation" do
+        workout = create(:workout, valid_attributes)
+        sign_in workout.host
+        create(:reservation, workout: workout, quantity: 1)
+        patch workout_path(workout), params: { workout: new_attributes }.to_json, headers: valid_headers
+        workout.reload
+        expect(workout.title).to eq("workout")
+        expect(workout.description).to eq("description")
       end
 
       it "renders a JSON response with the workout" do
