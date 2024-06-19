@@ -1,7 +1,8 @@
 class WorkoutsController < ApplicationController
     before_action :set_workout, only: %i[ show update destroy ]
-    before_action :authorize_user, only: %i[ update destroy ]
     before_action :authenticate_user!, only: %i[ create update destroy ]
+    before_action :authorize_user!, only: %i[ update destroy ]
+
 
   # GET /workouts
   def index
@@ -28,13 +29,13 @@ class WorkoutsController < ApplicationController
   def create
     Rails.logger.debug "Current User: #{current_user.inspect}"
     if current_user.nil?
-      render json: { error: 'Utilisateur non authentifié' }, status: :unauthorized
+      render json: { error: "Utilisateur non authentifié" }, status: :unauthorized
       return
     end
-  
+
     @workout = current_user.hosted_workouts.build(workout_params)
     Rails.logger.debug "Workout to be saved: #{@workout.inspect}"
-  
+
     if @workout.save
       render json: @workout, status: :created, location: @workout
     else
@@ -86,17 +87,16 @@ class WorkoutsController < ApplicationController
 
   private
 
-  def authorize_user
-    if @workout && @workout.user_id != current_user.id
-      render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
-    end
-  end
     # Use callbacks to share common setup or constraints between actions.
     def set_workout
       @workout = Workout.find(params[:id])
     end
 
     def authorize_user!
+      if current_user.isAdmin?
+        return
+      end
+
       unless @workout.host_id == current_user.id
         render json: { error: "Vous n'êtes pas autorisé à faire cette action" }, status: :unauthorized
       end
