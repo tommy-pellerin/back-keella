@@ -36,17 +36,6 @@ RSpec.describe Reservation, type: :model do
       expect(reservation).to_not be_valid
     end
 
-    it 'is not valid without a total' do
-      reservation.total = nil
-      expect(reservation).to_not be_valid
-    end
-
-    it 'is not valid with an incorrect total' do
-      reservation.total = workout.price * (workout.max_participants - 1)
-      expect(reservation).to_not be_valid
-      expect(reservation.errors.messages[:total]).to include('Le total est incorrect')
-    end
-
     it 'is valid with a total equal to the quantity multiplied by the workout price' do
       reservation.total = workout.price * reservation.quantity
       expect(reservation).to be_valid

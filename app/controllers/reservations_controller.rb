@@ -2,8 +2,7 @@ class ReservationsController < ApplicationController
   before_action :set_reservation, only: %i[ show update destroy ]
   before_action :authenticate_user!, only: %i[ create update destroy ]
   before_action :authorize_user!, only: %i[ update destroy ]
-  before_action :build_reservation, only: [ :create ]
-  before_action :is_places_available, only: [ :create ]
+  before_action :authorize_update, only: %i[ update ]
 
   # GET /reservations
   def index
@@ -19,14 +18,7 @@ class ReservationsController < ApplicationController
 
   # POST /reservations
   def create
-    puts "#"*50
-    puts "je suis dans create reservation"
-    # puts params
-    # puts reservation_params
-    puts current_user
-    puts "#"*50
     @reservation = current_user.reservations.build(reservation_params)
-    puts @reservation
     if @reservation.save
       render json: @reservation, status: :created, location: @reservation
     else
@@ -37,7 +29,13 @@ class ReservationsController < ApplicationController
 
   # PATCH/PUT /reservations/1
   def update
-    if @reservation.update(reservation_params)
+    if @reservation_updatable_attributes.include?("status")
+      if @reservation.update(reservation_update_params)
+      render json: @reservation
+      else
+        render json: @reservation.errors, status: :unprocessable_entity
+      end
+    elsif @reservation.update(reservation_update_params)
       render json: @reservation
     else
       render json: @reservation.errors, status: :unprocessable_entity
@@ -61,30 +59,22 @@ class ReservationsController < ApplicationController
       end
     end
 
+    def authorize_update
+      if current_user == @reservation.workout.host
+          @reservation_updatable_attributes = [ "status" ]
+      elsif current_user == @reservation.user
+          @reservation_updatable_attributes = [ "quantity" ]
+      else
+          render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
+      end
+    end
+
     # Only allow a list of trusted parameters through.
     def reservation_params
-      # puts "dans reservation params"
       params.require(:reservation).permit(:workout_id, :quantity, :total, :status)
     end
 
-    def build_reservation
-      puts "$"*50
-      puts "build reservation"
-      @builded_reservation = current_user.reservations.build(reservation_params)
-    end
-
-    def is_places_available
-      @workout = @builded_reservation.workout
-      puts "#"*50
-      puts @builded_reservation.quantity
-      puts @workout
-      if @workout.available_places - @builded_reservation.quantity > 0
-        puts "Des places sont disponible"
-        true
-      else
-        puts "Il n'y a plus de place"
-        render json: { error: "No available places" }, status: :unprocessable_entity
-        false
-      end
+    def reservation_update_params
+      params.require(:reservation).permit(@reservation_updatable_attributes)
     end
 end

@@ -1,6 +1,7 @@
 class Reservation < ApplicationRecord
   after_create :send_reservation_request_email
   after_update :send_email_on_condition
+  before_validation :set_total
 
   belongs_to :user
   belongs_to :workout
@@ -17,12 +18,22 @@ class Reservation < ApplicationRecord
   validate :past_workout
   validate :quantity_does_not_exceed_available_places
 
+  def update_status_without_validation(new_status)
+    self.status = new_status
+    save(validate: false)
+  end
+
   private
 
   def host_cannot_book_own_workout
     if workout.present? && user.id == workout.host.id
       errors.add(:host, "Vous ne pouvez pas réserver votre propre séance de sport")
     end
+  end
+
+  def set_total
+    return unless workout.present? && quantity.present?
+    self.total = quantity * workout.price
   end
 
   def max_participants
@@ -52,6 +63,10 @@ class Reservation < ApplicationRecord
     end
   end
 
+  def past_workout
+    errors.add(:workout, "La séance de sport est déjà passée") if workout.present? && workout.start_date + workout.duration.minutes < Time.now
+  end
+
   def available_places
     workout.present? ? workout.max_participants - workout.reservations.sum(:quantity) : 0
   end
@@ -65,12 +80,7 @@ class Reservation < ApplicationRecord
     errors.add(:quantity, "Il n'y a pas assez de places disponibles") if quantity > available_places
   end
 
-  def past_workout
-    errors.add(:workout, "La séance de sport est déjà passée") if workout.present? && workout.start_date + workout.duration.minutes < Time.now
-  end
-
   def send_reservation_request_email
-    puts "send request_email"
     HostMailer.reservation_request_email(self).deliver_now
   end
 
@@ -98,7 +108,6 @@ class Reservation < ApplicationRecord
   end
 
   def send_email_on_condition
-    puts "send email condition"
     case status
     # when "pending" # 0
     #   puts "pending request"
