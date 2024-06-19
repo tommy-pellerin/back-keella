@@ -59,25 +59,30 @@ class WorkoutsController < ApplicationController
   # GET /workouts/search
   def search
     @workouts = Workout.all
-
+  
     if params[:city].present?
       @workouts = @workouts.where(city: params[:city])
     end
-
-    if params[:date].present?
-      @workouts = @workouts.where(start_date: params[:date])
+  
+    if params[:date].present? && params[:time].present?
+      datetime = DateTime.parse("#{params[:date]} #{params[:time]}")
+      @workouts = @workouts.where(start_date: datetime)
+    elsif params[:date].present?
+      date = Date.parse(params[:date])
+      @workouts = @workouts.where(start_date: date.beginning_of_day..date.end_of_day)
     end
-
-    if params[:tags].present?
-      @workouts = @workouts.where('tags @> ARRAY[?]::varchar[]', params[:tags].split(','))
+  
+    if params[:category_id].present?
+      @workouts = @workouts.where(category_id: params[:category_id])
     end
-
+  
     if params[:participants].present?
       @workouts = @workouts.where('max_participants >= ?', params[:participants].to_i)
     end
-    
+  
     render json: @workouts
   end
+  
 
   private
 
