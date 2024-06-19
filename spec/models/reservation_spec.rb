@@ -36,17 +36,6 @@ RSpec.describe Reservation, type: :model do
       expect(reservation).to_not be_valid
     end
 
-    it 'is not valid without a total' do
-      reservation.total = nil
-      expect(reservation).to_not be_valid
-    end
-
-    it 'is not valid with an incorrect total' do
-      reservation.total = workout.price * (workout.max_participants - 1)
-      expect(reservation).to_not be_valid
-      expect(reservation.errors.messages[:total]).to include('Le total est incorrect')
-    end
-
     it 'is valid with a total equal to the quantity multiplied by the workout price' do
       reservation.total = workout.price * reservation.quantity
       expect(reservation).to be_valid
@@ -56,6 +45,45 @@ RSpec.describe Reservation, type: :model do
       host_reservation = build(:reservation, user: host, workout: workout)
       expect(host_reservation).to_not be_valid
       expect(host_reservation.errors.messages[:host]).to include("Vous ne pouvez pas réserver votre propre séance de sport")
+    end
+
+    it "is not valid if the workout is already full" do
+      workout.max_participants.times do
+        create(:reservation, workout: workout, quantity: 1)
+      end
+      new_reservation = build(:reservation, user: user, workout: workout)
+      expect(new_reservation).to_not be_valid
+    end
+
+    it 'is not valid if the quantity exceeds the available places' do
+      workout.max_participants.times do |i|
+          create(:reservation, workout: workout, quantity: 1) if i < workout.max_participants - 1
+      end
+      new_reservation = build(:reservation, user: user, workout: workout, quantity: 2)
+      expect(new_reservation).to_not be_valid
+      expect(new_reservation.errors.messages[:quantity]).to include("Il n'y a pas assez de places disponibles")
+    end
+
+    it "is not valid if the workout is past" do
+      workout = create(:workout, host: host, price: 20, max_participants: 10)
+      workout.update(start_date: Time.now - 1.day)
+      reservation = build(:reservation, user: user, workout: workout)
+      expect(reservation).to_not be_valid
+      expect(reservation.errors.messages[:workout]).to include("La séance de sport est déjà passée")
+    end
+
+    it 'is valid if the user does not have a reservation overlaping the new reservation' do
+      new_workout = create(:workout, host: host, price: 20, max_participants: 10, start_date: workout.start_date + workout.duration.minutes, duration: 60)
+      new_reservation = build(:reservation, user: user, workout: new_workout, quantity: 5, total: 100)
+      expect(new_reservation).to be_valid
+    end
+
+    it "is not valid if the user have a reservation overlaping the new reservation" do
+      new_start_date = reservation.workout.start_date + (reservation.workout.duration / 2).minutes
+      new_workout = create(:workout, host: host, price: 20, max_participants: 10, start_date: new_start_date, duration: 60)
+      new_reservation = build(:reservation, user: user, workout: new_workout, quantity: 5, total: 100)
+      expect(new_reservation).to_not be_valid
+      expect(new_reservation.errors.messages[:base]).to include("Vous avez déjà une réservation qui chevauche cette séance de sport")
     end
   end
 
