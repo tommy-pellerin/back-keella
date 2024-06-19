@@ -16,14 +16,27 @@ class WorkoutsController < ApplicationController
     if @workout.workout_images.attached?
       render json: @workout.as_json.merge({
         image_url: rails_blob_url(@workout.workout_images, only_path: true),
-        end_date: @workout.end_date, available_places: @workout.available_places
+        end_date: @workout.end_date, available_places: @workout.available_places,
+        category: @workout.category
       })
     else
-      render json: @workout.as_json(include: { host: { only: [ :username, :id ] } }).merge({
+      render json: @workout.as_json(include: { host: { only: [ :username, :id ] }, category: { only: [ :name ] } }).merge({
         end_date: @workout.end_date, available_places: @workout.available_places
       })
     end
   end
+
+  # def show
+  #   if @workout.workout_images.attached?
+  #     image_url = rails_blob_url(@workout.workout_images, only_path: true)
+  #   else
+  #     image_url = @workout.category.image_url if @workout.category.image.attached?
+  #   end
+
+  #   render json: @workout.as_json(include: [:category]).merge({
+  #     image_url: image_url,
+  #     end_date: @workout.end_date, available_places: @workout.available_places })
+  # end
 
   # POST /workouts
   def create
