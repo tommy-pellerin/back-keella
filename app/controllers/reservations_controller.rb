@@ -22,7 +22,7 @@ class ReservationsController < ApplicationController
     if @reservation.save
       render json: @reservation, status: :created, location: @reservation
     else
-      render json: @reservation.errors, status: :unprocessable_entity
+      render json: { error: @reservation.errors.full_messages.join(', ') }, status: :unprocessable_entity
     end
   end
 
