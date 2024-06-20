@@ -1,8 +1,13 @@
 class Workout < ApplicationRecord
   belongs_to :host, class_name: "User"
   belongs_to :category
+
   has_many :reservations, dependent: :destroy
   has_many :participants, through: :reservations, source: :user
+
+  has_many :ratings, dependent: :destroy
+  has_many :raters, through: :ratings, source: :user
+  has_many :rated_user, through: :ratings, source: :rated_user
 
   has_many_attached :workout_images
 
@@ -16,7 +21,6 @@ class Workout < ApplicationRecord
   validates :start_date, presence: true
   validates :duration, presence: true, numericality: { greater_than_or_equal_to: 30 }
   validates :max_participants, presence: true, numericality: { greater_than_or_equal_to: 1 }
-
   validate :start_date_must_be_at_least_4_hours_from_now
   validate :duration_must_be_multiple_of_30
 
@@ -46,11 +50,13 @@ class Workout < ApplicationRecord
     end
   end
 
-  def image_url
-    if self.workout_images.attached?
-      workout_images.first.service_url
-    else
-      self.category.image_url
+  def update_is_closed
+    if end_date < Time.now
+      self.is_closed = true
     end
+  end
+
+  def rating_average
+    self.ratings.average(:rating)
   end
 end
