@@ -8,6 +8,18 @@ class WorkoutsController < ApplicationController
   def index
     @workouts = Workout.all
 
+    # Tri
+    if params[:sort] == "creation"
+      @workouts = @workouts.sort_by_creation
+    elsif params[:sort] == "start_date"
+      @workouts = @workouts.sort_by_start_date
+    end
+
+    # Pagination
+    page = (params[:page] || 1).to_i
+    page_size = (params[:page_size] || 10).to_i
+    @workouts = @workouts.offset((page - 1) * page_size).limit(page_size)
+
     render json: @workouts
   end
 
