@@ -76,7 +76,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_20_053322) do
     t.bigint "workout_id", null: false
     t.integer "quantity"
     t.float "total"
-    t.integer "status", default: 0
+    t.integer "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_reservations_on_user_id"
