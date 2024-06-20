@@ -24,6 +24,9 @@ class Workout < ApplicationRecord
   validate :start_date_must_be_at_least_4_hours_from_now
   validate :duration_must_be_multiple_of_30
 
+  scope :sort_by_creation, -> { order(created_at: :desc) }
+  scope :sort_by_start_date, -> { order(start_date: :asc) }
+
   def end_date
     self.start_date + (self.duration * 60) # en minute
   end

@@ -76,5 +76,20 @@ puts 'Workouts created'
   )
 end
 
+100.times do
+  user = User.all.sample
+  workout = Workout.all.sample
+  while user == workout.host
+    workout = Workout.all.sample
+  end
+  Rating.create(
+    user: user,
+    workout: workout,
+    rated_user: workout.host,
+    rating: rand(1..5),
+    is_workout_rating: true
+  )
+  end
+
 ActionMailer::Base.perform_deliveries = true
 puts 'Reservations created'
