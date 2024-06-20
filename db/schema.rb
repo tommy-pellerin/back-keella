@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_06_18_060246) do
+ActiveRecord::Schema[7.2].define(version: 2024_06_20_053322) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -56,12 +56,27 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_18_060246) do
     t.index ["jti"], name: "index_jwt_denylist_on_jti"
   end
 
+  create_table "ratings", force: :cascade do |t|
+    t.integer "rating"
+    t.text "comment"
+    t.bigint "workout_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "rated_user_id", null: false
+    t.boolean "is_workout_rating", default: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["rated_user_id"], name: "index_ratings_on_rated_user_id"
+    t.index ["user_id", "workout_id", "rated_user_id"], name: "index_ratings_on_user_id_and_workout_id_and_rated_user_id", unique: true
+    t.index ["user_id"], name: "index_ratings_on_user_id"
+    t.index ["workout_id"], name: "index_ratings_on_workout_id"
+  end
+
   create_table "reservations", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "workout_id", null: false
     t.integer "quantity"
     t.float "total"
-    t.integer "status"
+    t.integer "status", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_reservations_on_user_id"
@@ -95,12 +110,16 @@ ActiveRecord::Schema[7.2].define(version: 2024_06_18_060246) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.bigint "category_id"
+    t.boolean "isclosed", default: false
     t.index ["category_id"], name: "index_workouts_on_category_id"
     t.index ["host_id"], name: "index_workouts_on_host_id"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "ratings", "users"
+  add_foreign_key "ratings", "users", column: "rated_user_id"
+  add_foreign_key "ratings", "workouts"
   add_foreign_key "reservations", "users"
   add_foreign_key "reservations", "workouts"
   add_foreign_key "workouts", "categories"

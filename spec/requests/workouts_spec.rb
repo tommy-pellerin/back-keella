@@ -48,20 +48,25 @@ RSpec.describe "/workouts", type: :request do
   end
 
   describe "GET /workouts" do
+    let!(:workouts) { create_list(:workout, 30, host: user) }
     it "renders a successful response" do
       get workouts_path, headers: valid_headers
       expect(response).to be_successful
     end
 
-    it "returns a list of workouts" do
-      workout1 = create(:workout, title: "workout1")
-      workout2 = create(:workout, title: "workout2")
+    it 'returns workouts sorted by start date' do
+      get workouts_path, params: { sort: "start_date", page: 1, page_size: 10 }, headers: valid_headers
+      json = JSON.parse(response.body)
+      expect(response).to be_successful
+      expect(json.length).to eq(10)
+      expect(json.first["start_date"]).to be < json.last["start_date"]
+    end
 
-      get workouts_path, headers: valid_headers
-
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to include(workout1.title)
-      expect(response.body).to include(workout2.title)
+    it 'returns workouts paginated' do
+      get workouts_path, params: { page: 1, page_size: 10 }, headers: valid_headers
+      json = JSON.parse(response.body)
+      expect(response).to be_successful
+      expect(json.length).to eq(10)
     end
   end
 
