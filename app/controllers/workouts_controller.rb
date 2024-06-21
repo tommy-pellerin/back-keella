@@ -20,7 +20,25 @@ class WorkoutsController < ApplicationController
     page_size = (params[:page_size] || 10).to_i
     @workouts = @workouts.offset((page - 1) * page_size).limit(page_size)
 
-    render json: @workouts
+    # Include image URLs
+    workouts_with_images = @workouts.map do |workout|
+      image_url = if workout.workout_images.attached?
+                    rails_blob_url(workout.workout_images.first)
+                  elsif workout.category.category_image.attached?
+                    rails_blob_url(workout.category.category_image)
+                  else
+                    nil
+                  end
+
+      workout.as_json(include: { host: { only: [:username, :id] }, category: { only: [:name] } }).merge({
+        image_url: image_url,
+        end_date: workout.end_date,
+        available_places: workout.available_places,
+        category: workout.category
+      })
+    end
+
+    render json: workouts_with_images
   end
 
   # GET /workouts/1
