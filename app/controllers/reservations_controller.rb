@@ -71,11 +71,10 @@ class ReservationsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def reservation_params
-      params.require(:reservation).permit(:workout_id, :quantity, :total, :status)
+      params.require(:reservation).permit(:workout_id, :quantity)
     end
 
     def reservation_update_params
       params.require(:reservation).permit(@reservation_updatable_attributes)
-
     end
 end
