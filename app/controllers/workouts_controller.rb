@@ -36,10 +36,13 @@ class WorkoutsController < ApplicationController
         category: @workout.category
       })
     else
+
       render json: @workout.as_json(include: { host: { only: [ :username, :id ] }, category: { only: [ :name ] } }).merge({
         end_date: @workout.end_date,
         available_places: @workout.available_places,
-        category: @workout.category
+        category: @workout.category.as_json.merge(
+          @workout.category.category_image.attached? ? { category_image: rails_blob_url(@workout.category.category_image) } : {}
+        )
       })
     end
   end
