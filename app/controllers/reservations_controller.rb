@@ -22,7 +22,7 @@ class ReservationsController < ApplicationController
     if @reservation.save
       render json: @reservation, status: :created, location: @reservation
     else
-      render json: @reservation.errors, status: :unprocessable_entity
+      render json: { error: @reservation.errors.full_messages.join(', ') }, status: :unprocessable_entity
     end
   end
 
@@ -71,7 +71,7 @@ class ReservationsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def reservation_params
-      params.require(:reservation).permit(:workout_id, :quantity, :total, :status)
+      params.require(:reservation).permit(:workout_id, :quantity)
     end
 
     def reservation_update_params

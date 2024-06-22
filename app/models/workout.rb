@@ -32,8 +32,9 @@ class Workout < ApplicationRecord
   end
 
   def available_places
+    puts self.participants
     if self.reservations
-      self.max_participants - self.participants.length
+      self.max_participants - self.reservations.sum(:quantity)
     else
       self.max_participants
     end

@@ -14,6 +14,7 @@ Faker::Config.locale = 'fr'
 User.destroy_all
 Reservation.destroy_all
 Workout.destroy_all
+Category.destroy_all
 
 User.create(
   username: 'admin',

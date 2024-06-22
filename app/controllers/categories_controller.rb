@@ -8,6 +8,19 @@ class CategoriesController < ApplicationController
   def index
     @categories = Category.all
 
+    # Sorting
+    if params[:sort] == "creation"
+      @categories = @categories.sort_by_creation
+    elsif params[:sort] == "name"
+      @categories = @categories.sort_by_name
+    end
+
+    @categories = @categories.map do |category|
+      category.as_json.merge(category.category_image.attached? ? { category_image: rails_blob_url(category.category_image) } : {},
+      workouts: category.workouts
+      )
+    end
+  
     render json: @categories
   end
 
@@ -23,7 +36,7 @@ class CategoriesController < ApplicationController
     if @category.save
       render json: @category, status: :created, location: @category
     else
-      render json: @category.errors, status: :unprocessable_entity
+      render json: { errors: @category.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
@@ -32,7 +45,7 @@ class CategoriesController < ApplicationController
     if @category.update(category_params)
       render json: @category
     else
-      render json: @category.errors, status: :unprocessable_entity
+      render json: { errors: @category.errors.full_messages }, status: :unprocessable_entity
     end
   end
 

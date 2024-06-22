@@ -11,7 +11,7 @@ class UsersController < ApplicationController
   # GET /users/:id
   def show
     if @user
-      render json: @user.as_json(include: [ :hosted_workouts, :participated_workouts ])
+      render json: @user.as_json(include: [:reservations, :hosted_workouts, :participated_workouts ])
     else
       render json: { error: "Utilisateur non trouvé" }, status: :not_found
     end
