@@ -33,13 +33,22 @@ class WorkoutsController < ApplicationController
         image_urls: image_urls,
         end_date: @workout.end_date,
         available_places: @workout.available_places,
-        category: @workout.category
+        category: @workout.category.name
       })
     else
-      render json: @workout.as_json(include: { host: { only: [ :username, :id ] }, category: { only: [ :name ] } }).merge({
+      render json: @workout.as_json(include: {
+        host: { only: [:username, :id] },
+        category: { only: [:name] },
+        reservations: { 
+        include: {
+          user: { only: [:username, :id] }
+        },
+        only: [:id, :status] 
+      }
+      }).merge({
         end_date: @workout.end_date,
         available_places: @workout.available_places,
-        category: @workout.category
+        category: @workout.category.name
       })
     end
   end

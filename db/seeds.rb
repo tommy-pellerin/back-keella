@@ -93,3 +93,53 @@ end
 
 ActionMailer::Base.perform_deliveries = true
 puts 'Reservations created'
+
+# Trouvez l'utilisateur admin
+admin_user = User.find_by(isAdmin: true)
+
+# Créez des séances d'entraînement hébergées par l'admin
+5.times do
+  Workout.create(
+    title: Faker::Lorem.sentence,
+    description: Faker::Lorem.paragraph,
+    start_date: Faker::Time.forward(days: 23, period: :morning),
+    duration: rand(1..3)*30,
+    city: Faker::Address.city,
+    zip_code: Faker::Address.zip_code,
+    price: rand(1..50),
+    max_participants: rand(1..10),
+    host: admin_user,
+    category: Category.all.sample
+  )
+end
+puts 'Admin Workouts created'
+
+# # Créez des réservations pour les séances d'entraînement de l'admin
+Workout.where(host: admin_user).each do |workout|
+  3.times do
+    user = User.where.not(id: admin_user.id).sample
+    Reservation.create(
+      user: user,
+      workout: workout,
+      quantity: rand(1..3),
+      total: workout.price * rand(1..3),
+      status: ['pending', 'accepted', 'refused', 'host_cancelled', 'user_cancelled', 'closed', 'relaunched'].sample
+          )
+  end
+end
+puts 'Reservations for admin workouts created'
+# Créez des réservations pour les séances d'entraînement de l'admin avec uniquement les statuts 'pending' et 'relaunched'
+# Workout.where(host: admin_user).each do |workout|
+#   3.times do
+#     user = User.where.not(id: admin_user.id).sample
+#     status = ['pending', 'relaunched'].sample # Sélectionne uniquement 'pending' ou 'relaunched'
+#     Reservation.create(
+#       user: user,
+#       workout: workout,
+#       quantity: rand(1..3),
+#       total: workout.price * rand(1..3),
+#       status: status
+#     )
+#   end
+# end
+# puts 'Reservations with pending and relaunched status for admin workouts created'
