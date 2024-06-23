@@ -1,4 +1,7 @@
 Rails.application.routes.draw do
+  scope "/checkout" do
+    post "create", to: "checkout#create", as: "checkout_create"
+  end
   resources :ratings
   resources :categories
   resources :reservations
