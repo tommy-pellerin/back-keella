@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+  scope "/checkout" do
+    post "create", to: "checkout#create", as: "checkout_create"
+    patch 'success', to: 'checkout#success', as: 'checkout_success'
+    post "refund_payment", to: "checkout#refund_payment", as: "checkout_refund_payment"
+  end
   resources :ratings
   resources :categories
   resources :reservations
