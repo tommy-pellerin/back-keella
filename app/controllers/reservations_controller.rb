@@ -68,7 +68,7 @@ class ReservationsController < ApplicationController
       if current_user == @reservation.workout.host
           @reservation_updatable_attributes = [ "status" ]
       elsif current_user == @reservation.user
-          @reservation_updatable_attributes = [ "quantity" ]
+          @reservation_updatable_attributes = [ "quantity","status" ]
       else
           render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
       end
