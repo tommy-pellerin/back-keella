@@ -95,52 +95,48 @@ end
 ActionMailer::Base.perform_deliveries = true
 puts 'Reservations created'
 
-# Trouvez l'utilisateur admin
-admin_user = User.find_by(isAdmin: true)
+# # utilisateur pour test 
+# user1 = User.create(
+#   username: 'user1',
+#   email: 'user1@yopmail.com',
+#   password: '123456',
+# )
 
-# Créez des séances d'entraînement hébergées par l'admin
-5.times do
-  Workout.create(
-    title: Faker::Lorem.sentence,
-    description: Faker::Lorem.paragraph,
-    start_date: Faker::Time.forward(days: 23, period: :morning),
-    duration: rand(1..3)*30,
-    city: Faker::Address.city,
-    zip_code: Faker::Address.zip_code,
-    price: rand(1..50),
-    max_participants: rand(1..10),
-    host: admin_user,
-    category: Category.all.sample
-  )
-end
-puts 'Admin Workouts created'
+# puts 'User1 created'
 
-# # Créez des réservations pour les séances d'entraînement de l'admin
-Workout.where(host: admin_user).each do |workout|
-  3.times do
-    user = User.where.not(id: admin_user.id).sample
-    Reservation.create(
-      user: user,
-      workout: workout,
-      quantity: rand(1..3),
-      total: workout.price * rand(1..3),
-      status: ['pending', 'accepted', 'refused', 'host_cancelled', 'user_cancelled', 'closed', 'relaunched'].sample
-          )
-  end
-end
-puts 'Reservations for admin workouts created'
-# Créez des réservations pour les séances d'entraînement de l'admin avec uniquement les statuts 'pending' et 'relaunched'
-# Workout.where(host: admin_user).each do |workout|
-#   3.times do
-#     user = User.where.not(id: admin_user.id).sample
-#     status = ['pending', 'relaunched'].sample # Sélectionne uniquement 'pending' ou 'relaunched'
+# # Crée 10 workouts pour user1
+# 10.times do
+#   Workout.create(
+#     title: Faker::Lorem.sentence,
+#     description: Faker::Lorem.paragraph,
+#     start_date: Faker::Time.forward(days: 23, period: :morning),
+#     duration: rand(1..3) * 30,
+#     city: Faker::Address.city,
+#     zip_code: Faker::Address.zip_code,
+#     price: rand(1..50),
+#     max_participants: rand(1..10),
+#     host: user1,
+#     category: Category.all.sample
+#   )
+# end
+# puts '10 Workouts created for User1'
+
+# # Crée 20 réservations pour les workouts de user1, avec au moins 5 utilisateurs
+# 20.times do
+#   workout = Workout.where(host: user1).sample
+#   (1..5).each do
+#     user = User.all.sample
+#     while user == workout.host
+#       user = User.all.sample
+#     end
 #     Reservation.create(
 #       user: user,
 #       workout: workout,
-#       quantity: rand(1..3),
-#       total: workout.price * rand(1..3),
-#       status: status
+#       quantity: rand(1..10),
+#       total: workout.price * rand(1..10),
+#       status: rand(0..2)
 #     )
 #   end
 # end
-# puts 'Reservations with pending and relaunched status for admin workouts created'
+
+# puts '20 Reservations created for Workouts of User1'
