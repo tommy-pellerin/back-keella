@@ -11,7 +11,9 @@ class UsersController < ApplicationController
   # GET /users/:id
   def show
     if @user
-      render json: @user.as_json(include: [ :hosted_workouts, :participated_workouts ])
+      user_json = @user.as_json(include: [:reservations, :hosted_workouts, :participated_workouts])
+      user_json[:avatar] = @user.avatar.attached? ? url_for(@user.avatar) : nil
+      render json: user_json
     else
       render json: { error: "Utilisateur non trouvé" }, status: :not_found
     end

@@ -20,24 +20,55 @@ class WorkoutsController < ApplicationController
     page_size = (params[:page_size] || 10).to_i
     @workouts = @workouts.offset((page - 1) * page_size).limit(page_size)
 
-    render json: @workouts
+    # Include image URLs
+    workouts_with_images = @workouts.map do |workout|
+      image_url = if workout.workout_images.attached?
+                    rails_blob_url(workout.workout_images.first)
+                  elsif workout.category.category_image.attached?
+                    rails_blob_url(workout.category.category_image)
+                  else
+                    nil
+                  end
+
+      workout.as_json(include: { host: { only: [:username, :id] }, category: { only: [:name] } }).merge({
+        image_url: image_url,
+        end_date: workout.end_date,
+        available_places: workout.available_places,
+        category: workout.category
+      })
+    end
+
+    render json: workouts_with_images
   end
 
   # GET /workouts/1
   def show
     if @workout.workout_images.attached?
       image_urls = @workout.workout_images.map do |image|
-        rails_blob_url(image, only_path: true)
+        rails_blob_url(image)
       end
-      render json: @workout.as_json.merge({
-
-        image_url: rails_blob_url(@workout.workout_images, only_path: true),
-        end_date: @workout.end_date, available_places: @workout.available_places,
-        category: @workout.category, participants: @workout.participants
+      render json: @workout.as_json(include: { host: { only: [ :username, :id ] }, category: { only: [ :name ] } }).merge({
+        image_urls: image_urls,
+        end_date: @workout.end_date,
+        available_places: @workout.available_places,
+        category: @workout.category.name
       })
     else
-      render json: @workout.as_json(include: { host: { only: [ :username, :id ] }, category: { only: [ :name ] }, participants: { only: [ :username, :id ] } }).merge({
-        end_date: @workout.end_date, available_places: @workout.available_places
+      render json: @workout.as_json(include: {
+        host: { only: [:username, :id] },
+        category: { only: [:name] },
+        reservations: { 
+        include: {
+          user: { only: [:username, :id] }
+        },
+        only: [:id, :status] 
+      }
+      }).merge({
+        end_date: @workout.end_date,
+        available_places: @workout.available_places,
+        category: @workout.category.as_json.merge(
+          @workout.category.category_image.attached? ? { category_image: rails_blob_url(@workout.category.category_image) } : {}
+        )
       })
     end
   end

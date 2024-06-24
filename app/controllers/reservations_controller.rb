@@ -22,25 +22,26 @@ class ReservationsController < ApplicationController
     if @reservation.save
       render json: @reservation, status: :created, location: @reservation
     else
-      render json: @reservation.errors, status: :unprocessable_entity
+      render json: { error: @reservation.errors.full_messages.join(', ') }, status: :unprocessable_entity
     end
   end
 
 
   # PATCH/PUT /reservations/1
-  def update
-    if @reservation_updatable_attributes.include?("status")
-      if @reservation.update(reservation_update_params)
-      render json: @reservation
-      else
-        render json: @reservation.errors, status: :unprocessable_entity
-      end
-    elsif @reservation.update(reservation_update_params)
+def update
+  if @reservation_updatable_attributes.include?("status")
+    # Mettre à jour le statut sans déclencher les validations
+    @reservation.update_status_without_validation(reservation_update_params[:status])
+    render json: @reservation
+  else
+    # Si d'autres attributs doivent être mis à jour, incluez-les ici
+    if @reservation.update(reservation_update_params)
       render json: @reservation
     else
       render json: @reservation.errors, status: :unprocessable_entity
     end
   end
+end
 
   # DELETE /reservations/1
   def destroy
@@ -54,12 +55,16 @@ class ReservationsController < ApplicationController
     end
 
     def authorize_user!
-      unless @reservation.user_id == current_user.id
+      workout = @reservation.workout
+      unless @reservation.user_id == current_user.id || workout.host_id == current_user.id
         render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
       end
     end
 
     def authorize_update
+      puts "Current user: #{current_user.id}" # Log pour débogage
+      puts "Workout host: #{@reservation.workout.host.id}"
+
       if current_user == @reservation.workout.host
           @reservation_updatable_attributes = [ "status" ]
       elsif current_user == @reservation.user
