@@ -5,7 +5,7 @@ class CreateReservations < ActiveRecord::Migration[7.2]
       t.references :workout, null: false, foreign_key: true
       t.integer :quantity
       t.float :total
-      t.integer :status
+      t.integer :status, default: 0
 
       t.timestamps
     end

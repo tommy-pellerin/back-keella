@@ -1,10 +1,9 @@
 FactoryBot.define do
   factory :rating do
-    rating { 1 }
+    rating { rand(1..5) }
     comment { "MyText" }
-    is_workout_rating { false }
-    association :workout
-    association :user
-    association :rated_user, factory: :user
+    association :user, factory: :user
+    association :rateable, factory: :workout
+    association :workout, factory: :workout
   end
 end
