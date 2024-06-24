@@ -28,20 +28,20 @@ class ReservationsController < ApplicationController
 
 
   # PATCH/PUT /reservations/1
-def update
-  if @reservation_updatable_attributes.include?("status")
-    # Mettre à jour le statut sans déclencher les validations
-    @reservation.update_status_without_validation(reservation_update_params[:status])
-    render json: @reservation
-  else
-    # Si d'autres attributs doivent être mis à jour, incluez-les ici
-    if @reservation.update(reservation_update_params)
+  def update
+    if @reservation_updatable_attributes.include?("status")
+      # Mettre à jour le statut sans déclencher les validations
+      @reservation.update_status_without_validation(reservation_update_params[:status])
       render json: @reservation
     else
-      render json: @reservation.errors, status: :unprocessable_entity
+      # Si d'autres attributs doivent être mis à jour, incluez-les ici
+      if @reservation.update(reservation_update_params)
+        render json: @reservation
+      else
+        render json: @reservation.errors, status: :unprocessable_entity
+      end
     end
   end
-end
 
   # DELETE /reservations/1
   def destroy

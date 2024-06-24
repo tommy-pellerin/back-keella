@@ -1,6 +1,7 @@
 class Reservation < ApplicationRecord
+  before_create :is_credit_enough
   after_create :send_reservation_request_email
-  after_update :send_email_on_condition
+  after_update :manage_email_and_credit_on_condition
   before_validation :set_total
 
   belongs_to :user
@@ -17,6 +18,7 @@ class Reservation < ApplicationRecord
   validate :already_full
   validate :past_workout
   validate :quantity_does_not_exceed_available_places
+  validate :is_credit_enough
 
   def update_status_without_validation(new_status)
     self.status = new_status
@@ -24,6 +26,14 @@ class Reservation < ApplicationRecord
   end
 
   private
+
+  # Ensure the user has enough credit to make the reservation
+  def is_credit_enough
+    total_price = set_total
+    if user.credit < total_price
+      errors.add(:base, "Vous n'avez pas assez de crédit pour réserver ce cours.")
+    end
+  end
 
   def host_cannot_book_own_workout
     if workout.present? && user.id == workout.host.id
@@ -107,7 +117,48 @@ class Reservation < ApplicationRecord
     HostMailer.evaluate_user_email(self).deliver_now
   end
 
-  def send_email_on_condition
+  def refund_user
+    amount_to_refund = set_total || 0
+    current_credit = user.credit || 0
+    new_credit = current_credit + amount_to_refund
+    if new_credit >= 0
+      user.update(credit: new_credit)
+    else
+      errors.add(:base, "Credit invalide")
+    end
+  end
+
+  def credit_host
+    begin
+      amount_to_credit = set_total
+      if amount_to_credit > 0
+        workout.host.update!(credit: workout.host.credit.to_f + amount_to_credit)
+        return "Host has been paid successfully."
+      else
+        return "Invalid payment amount."
+      end
+    rescue => e
+      # Log the error message e.message if logging is set up
+      return "An error occurred during payment: #{e.message}"
+    end
+  end
+
+  def debit_user
+    begin
+      amount_to_debit = set_total
+      if amount_to_debit > 0
+        user.update!(credit: user.credit.to_f - amount_to_debit)
+        return "Host has been paid successfully."
+      else
+        return "Invalid payment amount."
+      end
+    rescue => e
+      # Log the error message e.message if logging is set up
+      return "An error occurred during payment: #{e.message}"
+    end
+  end
+
+  def manage_email_and_credit_on_condition
     case status
     # when "pending" # 0
     #   puts "pending request"
@@ -115,12 +166,16 @@ class Reservation < ApplicationRecord
     when "accepted" # 1
       send_accepted_email
     when "refused" # 2
+      refund_user
       send_refused_email
     when "host_cancelled" # 3
+      refund_user
       send_workout_cancelled_email
     when "user_cancelled" # 4
+      refund_user
       send_reservation_cancelled_email
     when  "closed" # 5
+      credit_host
       # send email only if only user and/or host have not saved any evaluation for the participated workout
       send_evaluation_email
     end
