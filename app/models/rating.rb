@@ -1,21 +1,19 @@
 class Rating < ApplicationRecord
-  belongs_to :workout
   belongs_to :user
-  belongs_to :rated_user, class_name: "User"
+  belongs_to :rateable, polymorphic: true
+  belongs_to :workout
 
-  validates :rating, presence: true, numericality: { greater_than: 0, less_than_or_equal_to: 5 }
-  validates :comment, length: { maximum: 500 }
-  validates :workout_id, presence: true
-  validates :user_id, presence: true
-  validates :rated_user_id, presence: true
-  validates :is_workout_rating, inclusion: { in: [ true, false ] }
-  validates :user_id, uniqueness: { scope: [ :workout_id, :rated_user_id, :is_workout_rating ], message: "Vous avez déjà donné une note pour ce workout" }
+  validates :rating, presence: true, inclusion: { in: 1..5 }
+  validates :user, uniqueness: { scope: [ :rateable_type, :rateable_id, :workout_id ], message: "Vous avez déjà noté cette ressource" }
 
-  validate :user_cannot_rate_himself
-
-  def user_cannot_rate_himself
-    if user_id == rated_user_id
-      errors.add(:user_id, "Vous ne pouvez pas vous noter vous-même")
+  def valid_rating_context?(user, rating, workout_id)
+    if rating.rateable_type == "Workout"
+      user.participated_workouts.exists?(id: rating.rateable_id)
+    elsif rating.rateable_type == "User"
+      workout = Workout.find(workout_id)
+      workout.participants.find(rating.rateable_id)
+    else
+      false
     end
   end
 end
