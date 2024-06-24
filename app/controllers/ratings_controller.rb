@@ -17,12 +17,20 @@ class RatingsController < ApplicationController
 
   # POST /ratings
   def create
-    @rating = Rating.new(rating_params)
+    @rating = Rating.build(rating_params)
+    @rating.user = current_user
+    workout_id = rating_params[:workout_id]
+    workout = Workout.find(workout_id)
 
-    if @rating.save
-      render json: @rating, status: :created, location: @rating
+    if @rating.valid_rating_context?(current_user, @rating, workout_id)
+      if @rating.save
+        render json: @rating, status: :created, location: @rating
+      else
+        render json: @rating.errors, status: :unprocessable_entity
+        Rails.logger.error "Error while creating rating: " + @rating.errors.full_messages.join(", ") + " - " + @rating.inspect
+      end
     else
-      render json: @rating.errors, status: :unprocessable_entity
+      render json: { error: "Vous ne pouvez pas noter cette ressource, le workout n'est pas encore terminé" }, status: :unprocessable_entity
     end
   end
 
@@ -54,6 +62,6 @@ class RatingsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def rating_params
-      params.require(:rating).permit(:rating, :comment, :workout_id, :user_id, :rated_user_id)
+      params.require(:rating).permit(:rating, :comment, :rateable_type, :rateable_id, :workout_id)
     end
 end

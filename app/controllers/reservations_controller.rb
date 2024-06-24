@@ -81,6 +81,5 @@ end
 
     def reservation_update_params
       params.require(:reservation).permit(@reservation_updatable_attributes)
-
     end
 end
