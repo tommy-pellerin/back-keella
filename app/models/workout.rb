@@ -1,13 +1,15 @@
 class Workout < ApplicationRecord
   belongs_to :host, class_name: "User"
   belongs_to :category
+  has_many :comments
+  has_many :ratings, as: :rateable, dependent: :destroy
+
 
   has_many :reservations, dependent: :destroy
   has_many :participants, through: :reservations, source: :user
 
-  has_many :ratings, dependent: :destroy
-  has_many :raters, through: :ratings, source: :user
-  has_many :rated_user, through: :ratings, source: :rated_user
+  # Associations pour les ratings recus pour le workout
+  has_many :ratings, as: :rateable, dependent: :destroy
 
   has_many_attached :workout_images
 
@@ -55,7 +57,7 @@ class Workout < ApplicationRecord
 
   def update_is_closed
     if end_date < Time.now
-      self.is_closed = true
+      self.update(is_closed: true)
     end
   end
 
