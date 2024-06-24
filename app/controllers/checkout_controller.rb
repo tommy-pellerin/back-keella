@@ -1,4 +1,6 @@
 class CheckoutController < ApplicationController
+  # before_action :authenticate_user!
+
   def create
     @url = "http://localhost:5173/payment"
     puts "#"*50
@@ -38,4 +40,12 @@ class CheckoutController < ApplicationController
     # méthode avec page paiement gébergé par stripe
     render json: { sessionUrl: @session.url }, status: :ok
   end
+
+  def success
+    @session = Stripe::Checkout::Session.retrieve(params[:session_id])
+    @payment_intent = Stripe::PaymentIntent.retrieve(@session.payment_intent)
+    puts "#"*50
+    puts "success payment"
+  end
+
 end
