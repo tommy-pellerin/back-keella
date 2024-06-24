@@ -25,6 +25,21 @@ class Reservation < ApplicationRecord
     save(validate: false)
   end
 
+  def debit_user
+    begin
+      amount_to_debit = set_total
+      if amount_to_debit > 0
+        user.update!(credit: user.credit.to_f - amount_to_debit)
+        return "Host has been paid successfully."
+      else
+        return "Invalid payment amount."
+      end
+    rescue => e
+      # Log the error message e.message if logging is set up
+      return "An error occurred during payment: #{e.message}"
+    end
+  end
+
   private
 
   # Ensure the user has enough credit to make the reservation
@@ -143,24 +158,9 @@ class Reservation < ApplicationRecord
     end
   end
 
-  def debit_user
-    begin
-      amount_to_debit = set_total
-      if amount_to_debit > 0
-        user.update!(credit: user.credit.to_f - amount_to_debit)
-        return "Host has been paid successfully."
-      else
-        return "Invalid payment amount."
-      end
-    rescue => e
-      # Log the error message e.message if logging is set up
-      return "An error occurred during payment: #{e.message}"
-    end
-  end
-
   def manage_email_and_credit_on_condition
     case status
-    # when "pending" # 0
+    when "pending" # 0
     #   puts "pending request"
     #   send_reservation_request_email
     when "accepted" # 1

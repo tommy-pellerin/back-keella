@@ -19,7 +19,7 @@ class ReservationsController < ApplicationController
   # POST /reservations
   def create
     @reservation = current_user.reservations.build(reservation_params)
-    if @reservation.save
+    if @reservation.save && @reservation.debit_user
       render json: @reservation, status: :created, location: @reservation
     else
       render json: { error: @reservation.errors.full_messages.join(', ') }, status: :unprocessable_entity
