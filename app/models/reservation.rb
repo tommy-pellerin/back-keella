@@ -92,11 +92,11 @@ class Reservation < ApplicationRecord
   end
 
   def available_places
-    workout.present? ? workout.max_participants - workout.reservations.sum(:quantity) : 0
+    workout.present? ? workout.max_participants - workout.reservations.where(status: ['pending','accepted']).sum(:quantity) : 0
   end
 
   def already_full
-    errors.add(:base, "La séance de sport est complète") if available_places <= 0
+    errors.add(:base, "La séance de sport est complète") if available_places < 0
   end
 
   def quantity_does_not_exceed_available_places
