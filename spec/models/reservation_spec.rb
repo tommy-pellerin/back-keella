@@ -105,7 +105,7 @@ RSpec.describe Reservation, type: :model do
       new_workout = create(:workout, host: host, price: 20, max_participants: 10)
       new_reservation = create(:reservation, user: new_user, workout: new_workout, quantity: 5)
       reservation_cost = new_reservation.total
-      puts new_reservation.debit_user
+      new_reservation.debit_user
       new_user.reload
       expect(new_user.credit).to eq(initial_credit - reservation_cost)
     end
@@ -113,8 +113,8 @@ RSpec.describe Reservation, type: :model do
 
   context 'when the user does not have enough credit' do
     it 'raises an error' do
-      user.update(credit: 10) # Set the user's credit to a value less than the debit amount
-      expect { reservation.debit_user }.to raise_error(StandardError) # Assuming it raises StandardError; adjust as necessary
+      user.update(credit: 0)
+      expect { reservation.debit_user }.to raise_error(StandardError)
     end
   end
 end

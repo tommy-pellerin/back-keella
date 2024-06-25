@@ -43,7 +43,7 @@ class Reservation < ApplicationRecord
 
   # Ensure the user has enough credit to make the reservation
   def is_credit_enough
-    total_price = set_total
+    total_price = set_total || 0
     if user.credit < total_price
       errors.add(:base, "Vous n'avez pas assez de crédit pour réserver ce cours.")
     end

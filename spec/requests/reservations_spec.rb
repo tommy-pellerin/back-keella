@@ -1,5 +1,6 @@
 require 'rails_helper'
 RSpec.describe "/reservations", type: :request do
+  ActionMailer::Base.perform_deliveries = false
   let(:user) { create(:user) }
   let(:host) { create(:user) }
   let(:workout) { create(:workout, host: host) }
@@ -8,7 +9,7 @@ RSpec.describe "/reservations", type: :request do
       user_id: user.id,
       workout_id: workout.id,
       quantity: 1,
-      total: 20
+      total: 20,
     }
   end
 
@@ -17,7 +18,7 @@ RSpec.describe "/reservations", type: :request do
       user_id: nil,
       workout_id: nil,
       quantity: nil,
-      total: nil
+      total: nil,
     }
   end
 
