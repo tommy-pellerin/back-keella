@@ -7,12 +7,12 @@ class RatingsController < ApplicationController
   def index
     @ratings = Rating.all
 
-    render json: @ratings
+    render json: @ratings.to_json(include: { user: { only: [:id, :username] } })
   end
 
   # GET /ratings/1
   def show
-    render json: @rating
+    render json: @ratings.to_json(include: { user: { only: [:id, :username] } })
   end
 
   # POST /ratings

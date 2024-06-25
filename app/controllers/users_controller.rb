@@ -11,7 +11,10 @@ class UsersController < ApplicationController
   # GET /users/:id
   def show
     if @user
-      user_json = @user.as_json(include: [ :reservations, :hosted_workouts, :participated_workouts, :ratings_received ])
+      user_json = @user.as_json(include: [ :reservations, :hosted_workouts, :participated_workouts, ratings_received: {
+        include: { user: { only: [:id, :username] } }
+      }
+    ])
       user_json[:avatar] = @user.avatar.attached? ? url_for(@user.avatar) : nil
       render json: user_json
     else
