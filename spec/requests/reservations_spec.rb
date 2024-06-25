@@ -17,7 +17,7 @@ RSpec.describe "/reservations", type: :request do
       user_id: nil,
       workout_id: nil,
       quantity: nil,
-      total: nil,
+      total: nil
     }
   end
 
