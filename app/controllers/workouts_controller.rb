@@ -15,6 +15,29 @@ class WorkoutsController < ApplicationController
       @workouts = @workouts.sort_by_start_date
     end
 
+    # Recherche
+    if params[:city].present?
+      @workouts = @workouts.where(city: params[:city])
+    end
+  
+    if params[:date].present?
+      date = Date.parse(params[:date])
+      @workouts = @workouts.where(start_date: date.beginning_of_day..date.end_of_day)
+    end
+
+    if params[:time].present?
+      @workouts = @workouts.where('duration = ?', params[:time])
+    end
+  
+    if params[:category_id].present?
+      @workouts = @workouts.where(category_id: params[:category_id])
+    end
+  
+    if params[:participants].present?
+      participants_needed = params[:participants].to_i
+      @workouts = @workouts.select { |workout| workout.available_places >= participants_needed }    
+    end
+
     # Pagination
     page = (params[:page] || 1).to_i
     page_size = (params[:page_size] || 10).to_i
@@ -142,7 +165,10 @@ class WorkoutsController < ApplicationController
     if params[:participants].present?
       @workouts = @workouts.where('max_participants >= ?', params[:participants].to_i)
     end
-  
+
+    if params[:sort] == "start_date"
+    @workouts = @workouts.sort_by_start_date
+    end
     render json: @workouts
   end
   
