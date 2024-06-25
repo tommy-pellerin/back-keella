@@ -9,7 +9,7 @@ RSpec.describe "/reservations", type: :request do
       user_id: user.id,
       workout_id: workout.id,
       quantity: 1,
-      total: 20,
+      total: 20
     }
   end
 
