@@ -19,9 +19,14 @@ class ReservationsController < ApplicationController
   # POST /reservations
   def create
     @reservation = current_user.reservations.build(reservation_params)
-    if @reservation.save && @reservation.debit_user
-      render json: @reservation, status: :created, location: @reservation
+    if @reservation.valid? && @reservation.debit_user # Ensure reservation is valid and user is debited successfully
+      if @reservation.save
+        render json: @reservation, status: :created, location: @reservation
+      else
+        render json: { error: @reservation.errors.full_messages.join(', ') }, status: :unprocessable_entity
+      end
     else
+      # Handle errors from debit operation or invalid reservation
       render json: { error: @reservation.errors.full_messages.join(', ') }, status: :unprocessable_entity
     end
   end

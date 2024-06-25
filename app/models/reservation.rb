@@ -1,5 +1,4 @@
 class Reservation < ApplicationRecord
-  before_create :is_credit_enough
   after_create :send_reservation_request_email
   after_update :manage_email_and_credit_on_condition
   before_validation :set_total
@@ -18,7 +17,7 @@ class Reservation < ApplicationRecord
   validate :already_full
   validate :past_workout
   validate :quantity_does_not_exceed_available_places
-  validate :is_credit_enough
+  validate :is_credit_enough, on: :create
 
   def update_status_without_validation(new_status)
     self.status = new_status
