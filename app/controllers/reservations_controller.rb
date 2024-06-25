@@ -67,9 +67,6 @@ class ReservationsController < ApplicationController
     end
 
     def authorize_update
-      puts "Current user: #{current_user.id}" # Log pour débogage
-      puts "Workout host: #{@reservation.workout.host.id}"
-
       if current_user == @reservation.workout.host
           @reservation_updatable_attributes = [ "status" ]
       elsif current_user == @reservation.user

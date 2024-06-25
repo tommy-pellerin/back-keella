@@ -7,6 +7,7 @@ class User < ApplicationRecord
   has_many :participated_workouts, through: :reservations, source: :workout
 
   has_many :ratings, dependent: :destroy
+  has_many :ratings_received, -> { where(rateable_type: "User") }, class_name: "Rating", foreign_key: "rateable_id"
 
   has_one_attached :avatar
 
