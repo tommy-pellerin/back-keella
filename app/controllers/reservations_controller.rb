@@ -19,10 +19,15 @@ class ReservationsController < ApplicationController
   # POST /reservations
   def create
     @reservation = current_user.reservations.build(reservation_params)
-    if @reservation.save
-      render json: @reservation, status: :created, location: @reservation
+    if @reservation.valid? && @reservation.debit_user # Ensure reservation is valid and user is debited successfully
+      if @reservation.save
+        render json: @reservation, status: :created, location: @reservation
+      else
+        render json: { error: @reservation.errors.full_messages.join(', ') }, status: :unprocessable_entity
+      end
     else
-      render json: { error: @reservation.errors.full_messages.join(", ") }, status: :unprocessable_entity
+      # Handle errors from debit operation or invalid reservation
+      render json: { error: @reservation.errors.full_messages.join(', ') }, status: :unprocessable_entity
     end
   end
 
@@ -72,7 +77,7 @@ class ReservationsController < ApplicationController
       if current_user == @reservation.workout.host
           @reservation_updatable_attributes = [ "status" ]
       elsif current_user == @reservation.user
-          @reservation_updatable_attributes = [ "quantity","status" ]
+          @reservation_updatable_attributes = [ "quantity", "status" ]
       else
           render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
       end

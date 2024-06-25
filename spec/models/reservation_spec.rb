@@ -96,4 +96,24 @@ RSpec.describe Reservation, type: :model do
       expect(Reservation.reflect_on_association(:workout).macro).to eq(:belongs_to)
     end
   end
+
+  context 'when the user has enough credit' do
+    it 'debits the user by the correct amount' do
+      initial_credit = 100
+      new_user = create(:user, credit: initial_credit)
+      new_workout = create(:workout, host: host, price: 20, max_participants: 10)
+      new_reservation = create(:reservation, user: new_user, workout: new_workout, quantity: 5)
+      reservation_cost = new_reservation.total
+      new_reservation.debit_user
+      new_user.reload
+      expect(new_user.credit).to eq(initial_credit - reservation_cost)
+    end
+  end
+
+  context 'when the user does not have enough credit' do
+    it 'raises an error' do
+      user.update(credit: 0)
+      expect { reservation.debit_user }.to raise_error(StandardError)
+    end
+  end
 end
