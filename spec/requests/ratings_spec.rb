@@ -3,7 +3,12 @@ require 'rails_helper'
 RSpec.describe "/ratings", type: :request do
   let(:user) { create(:user) }
   let(:host) { create(:user) }
-  let(:workout) { create(:workout, host: host) }
+  let(:workout) do
+    w = create(:workout, host: host, is_closed: false)
+    w.update_column(:is_closed, true)
+    w.update_column(:start_date, Time.now - 1.day)
+    w
+  end
   let(:reservation) { create(:reservation, workout: workout, user: user, quantity: 1) }
   let(:rating) { create(:rating, rateable: workout, user: user) }
 
