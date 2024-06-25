@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe Reservation, type: :model do
-  ActionMailer::Base.perform_deliveries = false
   let(:user) { create(:user) }
   let(:host) { create(:user) }
   let(:workout) { create(:workout, host: host, price: 20, max_participants: 10) }
