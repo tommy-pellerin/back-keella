@@ -13,7 +13,7 @@ class Reservation < ApplicationRecord
   validates :total, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validate :host_cannot_book_own_workout, on: :create
   validate :total_calculation, if: -> { workout.present? && quantity.present? }
-  validate :no_overlap
+  validate :no_overlap, unless: -> { %i[host_cancelled user_cancelled closed refused].include?(status) }
   validate :already_full
   validate :past_workout
   validate :quantity_does_not_exceed_available_places
@@ -56,8 +56,11 @@ class Reservation < ApplicationRecord
   def no_overlap
     return unless workout && user && start_time && end_time
 
-    existing_reservations = Reservation.joins(:workout).where(user: user).where.not(id: id).where("#{Workout.table_name}.start_date < ? AND (#{Workout.table_name}.start_date + (#{Workout.table_name}.duration || ' minutes')::interval) > ?", end_time, start_time)
-
+    existing_reservations = Reservation.joins(:workout)
+                                       .where(user: user)
+                                       .where.not(id: id)
+                                       .where.not(status: %i[host_cancelled user_cancelled closed refused])
+                                       .where("#{Workout.table_name}.start_date < ? AND (#{Workout.table_name}.start_date + (#{Workout.table_name}.duration || ' minutes')::interval) > ?", end_time, start_time)
     if existing_reservations.any?
       errors.add(:base, "Vous avez déjà une réservation qui chevauche cette séance de sport")
     end
@@ -72,7 +75,7 @@ class Reservation < ApplicationRecord
   end
 
   def already_full
-    errors.add(:base, "La séance de sport est complète") if available_places <= 0
+    errors.add(:base, "La séance de sport est complète") if available_places < 0
   end
 
   def quantity_does_not_exceed_available_places

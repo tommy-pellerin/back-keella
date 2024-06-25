@@ -24,13 +24,13 @@ class WorkoutsController < ApplicationController
     workouts_with_images = @workouts.map do |workout|
       image_url = if workout.workout_images.attached?
                     rails_blob_url(workout.workout_images.first)
-                  elsif workout.category.category_image.attached?
+      elsif workout.category.category_image.attached?
                     rails_blob_url(workout.category.category_image)
-                  else
+      else
                     nil
-                  end
+      end
 
-      workout.as_json(include: { host: { only: [:username, :id] }, category: { only: [:name] } }).merge({
+      workout.as_json(include: { host: { only: [ :username, :id ] }, category: { only: [ :name ] } }).merge({
         image_url: image_url,
         end_date: workout.end_date,
         available_places: workout.available_places,
@@ -55,13 +55,13 @@ class WorkoutsController < ApplicationController
       })
     else
       render json: @workout.as_json(include: {
-        host: { only: [:username, :id] },
-        category: { only: [:name] },
-        reservations: { 
+        host: { only: [ :username, :id ] },
+        category: { only: [ :name ] },
+        reservations: {
         include: {
-          user: { only: [:username, :id] }
+          user: { only: [ :username, :id ] }
         },
-        only: [:id, :status] 
+        only: [ :id, :status ]
       }
       }).merge({
         end_date: @workout.end_date,
@@ -87,14 +87,12 @@ class WorkoutsController < ApplicationController
 
   # POST /workouts
   def create
-    Rails.logger.debug "Current User: #{current_user.inspect}"
     if current_user.nil?
       render json: { error: "Utilisateur non authentifié" }, status: :unauthorized
       return
     end
 
     @workout = current_user.hosted_workouts.build(workout_params)
-    Rails.logger.debug "Workout to be saved: #{@workout.inspect}"
 
     if @workout.save
       render json: @workout, status: :created, location: @workout

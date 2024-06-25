@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe Rating, type: :model do
   let(:user) { create(:user) }
   let(:host) { create(:user) }
-  let(:workout) { create(:workout, host: host) }
+  let(:workout) { create(:workout, host: host, is_closed: true) }
   let(:rating) { create(:rating, user: user, workout: workout) }
 
   context 'validations' do
