@@ -17,10 +17,24 @@ class RatingsController < ApplicationController
 
   # POST /ratings
   def create
-    @rating = Rating.build(rating_params)
+    Rails.logger.info "Raw params: #{params.inspect}"
+    Rails.logger.info "Received params: #{rating_params.inspect}"
+    @rating = Rating.new(rating_params)
     @rating.user = current_user
+
     workout_id = rating_params[:workout_id]
-    workout = Workout.find(workout_id)
+
+    if workout_id.nil?
+      render json: { error: "workout_id is missing" }, status: :unprocessable_entity
+      return
+    end
+
+    begin
+      workout = Workout.find(workout_id)
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: "Workout not found" }, status: :unprocessable_entity
+      return
+    end
 
     if workout.is_closed
       if @rating.valid_rating_context?(current_user, @rating, workout_id)
@@ -37,6 +51,7 @@ class RatingsController < ApplicationController
       render json: { error: "Le workout n'est pas encore terminé" }, status: :unprocessable_entity
     end
   end
+
 
   # PATCH/PUT /ratings/1
   def update
@@ -66,6 +81,9 @@ class RatingsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def rating_params
-      params.require(:rating).permit(:rating, :comment, :rateable_type, :rateable_id, :workout_id)
+      params.require(:rating).permit(:rateable_type, :rateable_id, :workout_id, :rating, :comment)
+    rescue ActionController::ParameterMissing => e
+      Rails.logger.error "ParameterMissing: #{e.message}"
+      raise
     end
 end
