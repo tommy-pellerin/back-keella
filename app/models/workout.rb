@@ -42,6 +42,12 @@ class Workout < ApplicationRecord
     end
   end
 
+  scope :with_available_places, ->(places) {
+    joins('LEFT JOIN reservations ON reservations.workout_id = workouts.id')
+    .group('workouts.id')
+    .having('max_participants - COALESCE(SUM(reservations.quantity), 0) >= ?', places)
+  }
+
   private
 
   def start_date_must_be_at_least_4_hours_from_now

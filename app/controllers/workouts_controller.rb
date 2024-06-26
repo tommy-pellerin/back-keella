@@ -6,7 +6,7 @@ class WorkoutsController < ApplicationController
 
   # GET /workouts
   def index
-    @workouts = Workout.all
+    @workouts = Workout.all.includes(:host, :category, :reservations)
 
     # Tri
     if params[:sort] == "creation"
@@ -19,7 +19,7 @@ class WorkoutsController < ApplicationController
     if params[:city].present?
       @workouts = @workouts.where(city: params[:city])
     end
-  
+
     if params[:date].present?
       date = Date.parse(params[:date])
       @workouts = @workouts.where(start_date: date.beginning_of_day..date.end_of_day)
@@ -28,14 +28,14 @@ class WorkoutsController < ApplicationController
     if params[:time].present?
       @workouts = @workouts.where('duration = ?', params[:time])
     end
-  
+
     if params[:category_id].present?
       @workouts = @workouts.where(category_id: params[:category_id])
     end
-  
+
+    # Filter participants
     if params[:participants].present?
-      participants_needed = params[:participants].to_i
-      @workouts = @workouts.select { |workout| workout.available_places >= participants_needed }    
+      @workouts = @workouts.with_available_places(params[:participants].to_i)
     end
 
     # Pagination
@@ -53,7 +53,7 @@ class WorkoutsController < ApplicationController
                     nil
                   end
 
-      workout.as_json(include: { host: { only: [:username, :id] }, category: { only: [:name] } }).merge({
+      workout.as_json(include: { host: { only: [:username, :id] }, category: { only: [:name, :id] }}).merge({
         image_url: image_url,
         end_date: workout.end_date,
         available_places: workout.available_places,
@@ -141,37 +141,6 @@ class WorkoutsController < ApplicationController
   def destroy
     @workout.destroy!
   end
-  
-  # GET /workouts/search
-  def search
-    @workouts = Workout.all
-  
-    if params[:city].present?
-      @workouts = @workouts.where(city: params[:city])
-    end
-  
-    if params[:date].present? && params[:time].present?
-      datetime = DateTime.parse("#{params[:date]} #{params[:time]}")
-      @workouts = @workouts.where(start_date: datetime)
-    elsif params[:date].present?
-      date = Date.parse(params[:date])
-      @workouts = @workouts.where(start_date: date.beginning_of_day..date.end_of_day)
-    end
-  
-    if params[:category_id].present?
-      @workouts = @workouts.where(category_id: params[:category_id])
-    end
-  
-    if params[:participants].present?
-      @workouts = @workouts.where('max_participants >= ?', params[:participants].to_i)
-    end
-
-    if params[:sort] == "start_date"
-    @workouts = @workouts.sort_by_start_date
-    end
-    render json: @workouts
-  end
-  
 
   private
 
