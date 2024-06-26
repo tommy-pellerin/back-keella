@@ -5,6 +5,7 @@ class Rating < ApplicationRecord
 
   validates :rating, presence: true, inclusion: { in: 1..5 }
   validates :user, uniqueness: { scope: [ :rateable_type, :rateable_id, :workout_id ], message: "Vous avez déjà noté cette ressource" }
+  validate :workout_is_closed, on: :create
 
   def valid_rating_context?(user, rating, workout_id)
     if rating.rateable_type == "Workout"
@@ -15,5 +16,12 @@ class Rating < ApplicationRecord
     else
       false
     end
+  end
+
+  private
+
+  def workout_is_closed
+    return if workout.is_closed?
+      errors.add(:workout, "n'est pas encore terminé")
   end
 end

@@ -7,6 +7,7 @@ class User < ApplicationRecord
   has_many :participated_workouts, through: :reservations, source: :workout
 
   has_many :ratings, dependent: :destroy
+  has_many :ratings_received, -> { where(rateable_type: "User") }, class_name: "Rating", foreign_key: "rateable_id"
 
   has_one_attached :avatar
 
@@ -20,5 +21,9 @@ class User < ApplicationRecord
 
   def send_welcome_email
     UserMailer.welcome_email(self).deliver_now
+  end
+
+  def avatar_url
+    avatar.attached?? url_for(avatar) : nil
   end
 end

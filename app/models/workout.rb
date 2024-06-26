@@ -1,4 +1,6 @@
 class Workout < ApplicationRecord
+  after_update :closed_related_reservations, if: -> { saved_change_to_is_closed? && is_closed? }
+
   belongs_to :host, class_name: "User"
   belongs_to :category
   has_many :comments
@@ -10,6 +12,7 @@ class Workout < ApplicationRecord
 
   # Associations pour les ratings recus pour le workout
   has_many :ratings, as: :rateable, dependent: :destroy
+  has_many :ratings_received, -> { where(rateable_type: "Workout") }, class_name: "Rating", foreign_key: "rateable_id"
 
   has_many_attached :workout_images
 
@@ -36,7 +39,7 @@ class Workout < ApplicationRecord
   def available_places
     puts self.participants
     if self.reservations
-      self.max_participants - self.reservations.sum(:quantity)
+      self.max_participants - self.reservations.where(status: ['pending','accepted']).sum(:quantity)
     else
       self.max_participants
     end
@@ -70,5 +73,9 @@ class Workout < ApplicationRecord
 
   def rating_average
     self.ratings.average(:rating)
+  end
+
+  def closed_related_reservations
+    reservations.update_all(status: :closed) if is_closed
   end
 end

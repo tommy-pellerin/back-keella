@@ -2,7 +2,8 @@ class CheckoutController < ApplicationController
   before_action :authenticate_user!, except: [:refund_payment]
 
   def create
-    @url = "http://localhost:5173/payment"
+    @url = "https://front-keella.vercel.app/payment"
+    # @url = "http://localhost:5173/payment"
     puts "#"*50
     puts "Je suis dans create de checkout_controller.rb"
     puts params
@@ -76,19 +77,6 @@ class CheckoutController < ApplicationController
     end
   end
 
-  def payment_proceed(user, payment_intent)
-    @user = user
-    @payment_intent = payment_intent
-    @user.update(credit: @user.credit + @payment_intent.amount_received.to_f/100, session_token: nil)
-    UserMailer.payment_confirmation_email(@user, @payment_intent).deliver_now
-
-    # Send a success response
-    render json: {
-      message: "Paiement réussi et confirmé. Merci pour votre achat.",
-      credit_amount: @payment_intent.amount_received.to_f / 100,
-      payment_intent_status: @payment_intent.status
-    }, status: :ok
-  end
 
   def refund_payment
     session_id = params[:session_id] # Ou utilisez params[:payment_intent_id] si vous avez l'ID de l'intention de paiement
@@ -121,6 +109,20 @@ class CheckoutController < ApplicationController
   end
 
   private
+
+  def payment_proceed(user, payment_intent)
+    @user = user
+    @payment_intent = payment_intent
+    @user.update(credit: @user.credit + @payment_intent.amount_received.to_f/100, session_token: nil)
+    UserMailer.payment_confirmation_email(@user, @payment_intent).deliver_now
+
+    # Send a success response
+    render json: {
+      message: "Paiement réussi et confirmé. Merci pour votre achat.",
+      credit_amount: @payment_intent.amount_received.to_f / 100,
+      payment_intent_status: @payment_intent.status
+    }, status: :ok
+  end
 
   # Only allow a list of trusted parameters through.
   def checkout_params
