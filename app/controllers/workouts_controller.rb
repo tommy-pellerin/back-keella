@@ -56,7 +56,13 @@ class WorkoutsController < ApplicationController
         },
         only: [:id, :status] 
       },
-        ratings_received: { only: [:id, :rating, :comment, :user_id] }
+      ratings_received: {
+      include: {
+        user: { only: [:username] } 
+      },
+      methods: [:rateable_type, :rateable_id], 
+      only: [:id, :rating, :comment, :user_id, :workout_id] 
+    }
       }).merge({
         image_urls: image_urls,
         end_date: @workout.end_date,
@@ -73,7 +79,13 @@ class WorkoutsController < ApplicationController
         },
         only: [ :id, :status ]
       },
-        ratings_received: { only: [:id, :rating, :comment, :user_id] }
+      ratings_received: {
+      include: {
+        user: { only: [:username] } 
+      },
+      methods: [:rateable_type, :rateable_id], 
+      only: [:id, :rating, :comment, :user_id, :workout_id] 
+    }
       }).merge({
         end_date: @workout.end_date,
         available_places: @workout.available_places,
