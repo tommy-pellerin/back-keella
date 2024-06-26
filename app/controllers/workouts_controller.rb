@@ -48,13 +48,13 @@ class WorkoutsController < ApplicationController
         rails_blob_url(image)
       end
       render json: @workout.as_json(include: {
-        host: { only: [:username, :id] },
-        category: { only: [:name] },
-        reservations: { 
+        host: { only: [ :username, :id ], method: [ :avatar_url ] },
+        category: { only: [ :name ] },
+        reservations: {
         include: {
-          user: { only: [:username, :id] }
+          user: { only: [ :username, :id ], method: [ :avatar_url ] }
         },
-        only: [:id, :status] 
+        only: [ :id, :status ]
       },
       ratings_received: {
       include: {
@@ -67,15 +67,15 @@ class WorkoutsController < ApplicationController
         image_urls: image_urls,
         end_date: @workout.end_date,
         available_places: @workout.available_places,
-        
+        average_rating: @workout.ratings_received.any? ? @workout.ratings_received.average(:rating).round(1) : 0
       })
     else
       render json: @workout.as_json(include: {
-        host: { only: [:username, :id] },
-        category: { only: [:name] }, 
-        reservations: { 
+        host: { only: [ :username, :id ], method: [ :avatar_url ] },
+        category: { only: [ :name ] },
+        reservations: {
         include: {
-          user: { only: [ :username, :id ] }
+          user: { only: [ :username, :id ], method: [ :avatar_url ] }
         },
         only: [ :id, :status ]
       },
@@ -91,22 +91,11 @@ class WorkoutsController < ApplicationController
         available_places: @workout.available_places,
         category: @workout.category.as_json.merge(
           @workout.category.category_image.attached? ? { category_image: rails_blob_url(@workout.category.category_image) } : {}
-        )
+        ),
+        average_rating: @workout.ratings_received.any? ? @workout.ratings_received.average(:rating).round(1) : 0
       })
     end
   end
-
-  # def show
-  #   if @workout.workout_images.attached?
-  #     image_url = rails_blob_url(@workout.workout_images, only_path: true)
-  #   else
-  #     image_url = @workout.category.image_url if @workout.category.image.attached?
-  #   end
-
-  #   render json: @workout.as_json(include: [:category]).merge({
-  #     image_url: image_url,
-  #     end_date: @workout.end_date, available_places: @workout.available_places })
-  # end
 
   # POST /workouts
   def create

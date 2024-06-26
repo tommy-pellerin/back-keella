@@ -3,7 +3,7 @@ class UserMailer < ApplicationMailer
 
   def welcome_email(user)
     @user = user
-    @url  = "https://front-keella.vercel.app/sign-in"
+    @url  = "https://front-keella.vercel.app/"
     mail(to: @user.email, subject: "Bienvenue sur notre site")
   end
 

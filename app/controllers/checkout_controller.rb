@@ -2,7 +2,8 @@ class CheckoutController < ApplicationController
   before_action :authenticate_user!, except: [:refund_payment]
 
   def create
-    @url = "http://localhost:5173/payment"
+    @url = "https://front-keella.vercel.app/payment"
+    # @url = "http://localhost:5173/payment"
     puts "#"*50
     puts "Je suis dans create de checkout_controller.rb"
     puts params
