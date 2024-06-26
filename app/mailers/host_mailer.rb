@@ -9,7 +9,7 @@ class HostMailer < ApplicationMailer
     @workout = @reservation.workout
 
     # on définit une variable @url qu'on utilisera dans la view d’e-mail
-    @url  = 'http://keella.fly.dev' 
+    @url  = 'https://front-keella.vercel.app/' 
 
     # c'est cet appel à mail() qui permet d'envoyer l’e-mail en définissant destinataire et sujet.
     mail(to: @host.email, subject: 'Demande de reservation !')
