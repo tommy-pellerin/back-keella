@@ -48,7 +48,7 @@ class WorkoutsController < ApplicationController
         rails_blob_url(image)
       end
       render json: @workout.as_json(include: {
-        host: { only: [ :username, :id ], method: [ :avatar_url ] },
+        host: { only: [ :username, :id ] },
         category: { only: [ :name ] },
         reservations: {
         include: {
@@ -65,7 +65,7 @@ class WorkoutsController < ApplicationController
       })
     else
       render json: @workout.as_json(include: {
-        host: { only: [ :username, :id ], method: [ :avatar_url ] },
+        host: { only: [ :username, :id ] },
         category: { only: [ :name ] },
         reservations: {
         include: {
