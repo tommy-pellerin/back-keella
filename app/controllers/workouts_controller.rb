@@ -30,11 +30,12 @@ class WorkoutsController < ApplicationController
                     nil
       end
 
-      workout.as_json(include: { host: { only: [ :username, :id ] }, category: { only: [ :name ] } }).merge({
+      workout.as_json(include: { host: { only: [ :username, :id, :avatar ] }, category: { only: [ :name ] } }).merge({
         image_url: image_url,
         end_date: workout.end_date,
         available_places: workout.available_places,
-        category: workout.category
+        category: workout.category,
+        avatar: @workout.host.avatar.attached? ? url_for(@workout.host.avatar) : nil
       })
     end
 
@@ -48,11 +49,11 @@ class WorkoutsController < ApplicationController
         rails_blob_url(image)
       end
       render json: @workout.as_json(include: {
-        host: { only: [ :username, :id ] },
+        host: { only: [ :username, :id, :avatar ] },
         category: { only: [ :name ] },
         reservations: {
         include: {
-          user: { only: [ :username, :id ], method: [ :avatar_url ] }
+            user: { only: [ :username, :id, :avatar ] }
         },
         only: [ :id, :status ]
       },
@@ -61,7 +62,12 @@ class WorkoutsController < ApplicationController
         image_urls: image_urls,
         end_date: @workout.end_date,
         available_places: @workout.available_places,
-        average_rating: @workout.ratings_received.any? ? @workout.ratings_received.average(:rating).round(1) : 0
+        average_rating: @workout.ratings_received.any? ? @workout.ratings_received.average(:rating).round(1) : 0,
+        host_avatar: @workout.host.avatar.attached? ? url_for(@workout.host.avatar) : nil,
+        reservations_user_avatars: @workout.reservations.includes(:user).map do |reservation|
+        { reservation_id: reservation.id, user_avatar: reservation.user.avatar.attached? ? url_for(reservation.user.avatar) : nil }
+        end
+
       })
     else
       render json: @workout.as_json(include: {
@@ -69,7 +75,7 @@ class WorkoutsController < ApplicationController
         category: { only: [ :name ] },
         reservations: {
         include: {
-          user: { only: [ :username, :id ], method: [ :avatar_url ] }
+          user: { only: [ :username, :id ] }
         },
         only: [ :id, :status ]
       },
@@ -80,7 +86,11 @@ class WorkoutsController < ApplicationController
         category: @workout.category.as_json.merge(
           @workout.category.category_image.attached? ? { category_image: rails_blob_url(@workout.category.category_image) } : {}
         ),
-        average_rating: @workout.ratings_received.any? ? @workout.ratings_received.average(:rating).round(1) : 0
+        average_rating: @workout.ratings_received.any? ? @workout.ratings_received.average(:rating).round(1) : 0,
+        host_avatar: @workout.host.avatar.attached? ? url_for(@workout.host.avatar) : nil,
+        reservations_user_avatars: @workout.reservations.includes(:user).map do |reservation|
+        { reservation_id: reservation.id, user_avatar: reservation.user.avatar.attached? ? url_for(reservation.user.avatar) : nil }
+        end
       })
     end
   end
