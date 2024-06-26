@@ -105,7 +105,7 @@ class WorkoutsController < ApplicationController
   def update
     if @workout.reservations.any? && !current_user.isAdmin?
       render json: { error: "Vous ne pouvez pas modifier un workout qui a déjà des réservations" }, status: :unauthorized
-    elsif @workout.update(workout_params)
+    elsif @workout.update!(workout_params)
       render json: @workout
     else
       render json: @workout.errors, status: :unprocessable_entity
@@ -136,6 +136,6 @@ class WorkoutsController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def workout_params
-      params.require(:workout).permit(:title, :description, :start_date, :duration, :city, :zip_code, :price, :host_id, :max_participants, :category_id, workout_images: [])
+      params.require(:workout).permit(:title, :description, :start_date, :duration, :city, :zip_code, :price, :host_id, :max_participants, :category_id, :is_closed, workout_images: [])
     end
 end

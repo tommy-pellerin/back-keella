@@ -13,7 +13,7 @@ class UsersController < ApplicationController
     if @user
       user_json = @user.as_json(include: [ :reservations, :hosted_workouts, :participated_workouts, :ratings_received ])
       user_json[:avatar] = @user.avatar_url
-      user_json[:average_rating] = @user.rating_received.any? ? @user.ratings_received.average(:rating).round(1) : 0
+      user_json[:average_rating] = @user.ratings_received.any? ? @user.ratings_received.average(:rating).round(1) : 0
       render json: user_json
     else
       render json: { error: "Utilisateur non trouvé" }, status: :not_found

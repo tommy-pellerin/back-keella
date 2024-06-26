@@ -1,4 +1,6 @@
 class Workout < ApplicationRecord
+  after_update :closed_related_reservations, if: -> { saved_change_to_is_closed? && is_closed? }
+
   belongs_to :host, class_name: "User"
   belongs_to :category
   has_many :comments
@@ -65,5 +67,9 @@ class Workout < ApplicationRecord
 
   def rating_average
     self.ratings.average(:rating)
+  end
+
+  def closed_related_reservations
+    reservations.update_all(status: :closed) if is_closed
   end
 end
