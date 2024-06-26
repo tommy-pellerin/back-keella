@@ -37,15 +37,11 @@ class RatingsController < ApplicationController
     end
 
     if workout.is_closed
-      if @rating.valid_rating_context?(current_user, @rating, workout_id)
-        if @rating.save
-          render json: @rating, status: :created, location: @rating
-        else
-          render json: @rating.errors, status: :unprocessable_entity
-          Rails.logger.error "Error while creating rating: " + @rating.errors.full_messages.join(", ") + " - " + @rating.inspect
-        end
+      if @rating.save
+        render json: @rating, status: :created, location: @rating
       else
-        render json: { error: "Vous ne pouvez pas noter cette ressource" }, status: :unprocessable_entity
+        render json: @rating.errors, status: :unprocessable_entity
+        Rails.logger.error "Error while creating rating: " + @rating.errors.full_messages.join(", ") + " - " + @rating.inspect
       end
     else
       render json: { error: "Le workout n'est pas encore terminé" }, status: :unprocessable_entity
