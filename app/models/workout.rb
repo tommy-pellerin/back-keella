@@ -76,6 +76,9 @@ class Workout < ApplicationRecord
   end
 
   def closed_related_reservations
-    reservations.update_all(status: :closed) if is_closed
+    if is_closed?
+      reservations.where(status: "accepted").update_all(status: "closed")
+      reservations.where(status: "pending").update_all(status: "host_cancelled")
+    end
   end
 end

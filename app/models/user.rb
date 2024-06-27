@@ -22,8 +22,4 @@ class User < ApplicationRecord
   def send_welcome_email
     UserMailer.welcome_email(self).deliver_now
   end
-
-  def avatar_url
-    avatar.attached?? url_for(avatar) : nil
-  end
 end
