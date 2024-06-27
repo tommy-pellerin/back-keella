@@ -14,23 +14,38 @@ RSpec.describe Workout, type: :model do
       expect(workout).to_not be_valid
     end
 
-    it 'is not valid without a title' do
-      workout = build(:workout, host: user, title: nil)
+    it 'is not valid without a title with minimum lenght' do
+      workout = build(:workout, host: user, title: 'a'*2)
       expect(workout).to_not be_valid
     end
 
-    it 'is not valid without a description' do
-      workout = build(:workout, host: user, description: nil)
+    it 'is not valid without a title with maximum lenght' do
+      workout = build(:workout, host: user, title: 'a'*51)
       expect(workout).to_not be_valid
     end
 
-    it 'is not valid without a city' do
-      workout = build(:workout, host: user, city: nil)
+    it 'is not valid without a description with a minimum lenght' do
+      workout = build(:workout, host: user, description: 'a'*9)
       expect(workout).to_not be_valid
     end
 
-    it "is not valid without a zip code" do
-      workout = build(:workout, host: user, zip_code: nil)
+    it 'is not valid without a description with a maximum lenght' do
+      workout = build(:workout, host: user, description: 'a'*1001)
+      expect(workout).to_not be_valid
+    end
+
+    it 'is not valid without a city with a minimum lenght' do
+      workout = build(:workout, host: user, city: 'a'*2)
+      expect(workout).to_not be_valid
+    end
+
+    it 'is not valid without a city with a maximum lenght' do
+      workout = build(:workout, host: user, city: 'a'*51)
+      expect(workout).to_not be_valid
+    end
+
+    it "is not valid without a zip code with correct lenght" do
+      workout = build(:workout, host: user, zip_code: '123')
       expect(workout).to_not be_valid
     end
 

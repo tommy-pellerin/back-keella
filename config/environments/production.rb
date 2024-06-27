@@ -30,7 +30,7 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  config.active_storage.service = :amazon
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
@@ -95,7 +95,7 @@ Rails.application.configure do
     config.action_mailer.perform_deliveries = true
 
     # tell fly.io URL of my app is :
-    config.action_mailer.default_url_options = { host: "back-keella.fly.dev" }
+    config.action_mailer.default_url_options = { host: "https://front-keella.vercel.app" }
 
     ActionMailer::Base.smtp_settings = {
     user_name: ENV["MAILJET_LOGIN"],

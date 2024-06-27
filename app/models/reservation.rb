@@ -1,6 +1,6 @@
 class Reservation < ApplicationRecord
   after_create :send_reservation_request_email
-  after_update :send_email_on_condition
+  after_update :manage_email_and_credit_on_condition
   before_validation :set_total
 
   belongs_to :user
@@ -13,17 +13,41 @@ class Reservation < ApplicationRecord
   validates :total, presence: true, numericality: { greater_than_or_equal_to: 0 }
   validate :host_cannot_book_own_workout, on: :create
   validate :total_calculation, if: -> { workout.present? && quantity.present? }
-  validate :no_overlap
+  validate :no_overlap, unless: -> { %i[host_cancelled user_cancelled closed refused].include?(status) }
   validate :already_full
   validate :past_workout
   validate :quantity_does_not_exceed_available_places
+  validate :is_credit_enough, on: :create
 
   def update_status_without_validation(new_status)
     self.status = new_status
     save(validate: false)
   end
 
+  def debit_user
+    begin
+      amount_to_debit = set_total
+      if amount_to_debit > 0
+        user.update!(credit: user.credit.to_f - amount_to_debit)
+        return "Host has been paid successfully."
+      else
+        return "Invalid payment amount."
+      end
+    rescue => e
+      # Log the error message e.message if logging is set up
+      return "An error occurred during payment: #{e.message}"
+    end
+  end
+
   private
+
+  # Ensure the user has enough credit to make the reservation
+  def is_credit_enough
+    total_price = set_total || 0
+    if user.credit < total_price
+      errors.add(:base, "Vous n'avez pas assez de crédit pour réserver ce cours.")
+    end
+  end
 
   def host_cannot_book_own_workout
     if workout.present? && user.id == workout.host.id
@@ -56,8 +80,11 @@ class Reservation < ApplicationRecord
   def no_overlap
     return unless workout && user && start_time && end_time
 
-    existing_reservations = Reservation.joins(:workout).where(user: user).where.not(id: id).where("#{Workout.table_name}.start_date < ? AND (#{Workout.table_name}.start_date + (#{Workout.table_name}.duration || ' minutes')::interval) > ?", end_time, start_time)
-
+    existing_reservations = Reservation.joins(:workout)
+                                       .where(user: user)
+                                       .where.not(id: id)
+                                       .where.not(status: %i[host_cancelled user_cancelled closed refused])
+                                       .where("#{Workout.table_name}.start_date < ? AND (#{Workout.table_name}.start_date + (#{Workout.table_name}.duration || ' minutes')::interval) > ?", end_time, start_time)
     if existing_reservations.any?
       errors.add(:base, "Vous avez déjà une réservation qui chevauche cette séance de sport")
     end
@@ -68,11 +95,11 @@ class Reservation < ApplicationRecord
   end
 
   def available_places
-    workout.present? ? workout.max_participants - workout.reservations.sum(:quantity) : 0
+    workout.present? ? workout.max_participants - workout.reservations.where(status: ['pending','accepted']).sum(:quantity) : 0
   end
 
   def already_full
-    errors.add(:base, "La séance de sport est complète") if available_places <= 0
+    errors.add(:base, "La séance de sport est complète") if available_places < 0
   end
 
   def quantity_does_not_exceed_available_places
@@ -107,20 +134,50 @@ class Reservation < ApplicationRecord
     HostMailer.evaluate_user_email(self).deliver_now
   end
 
-  def send_email_on_condition
+  def refund_user
+    amount_to_refund = set_total || 0
+    current_credit = user.credit || 0
+    new_credit = current_credit + amount_to_refund
+    if new_credit >= 0
+      user.update(credit: new_credit)
+    else
+      errors.add(:base, "Credit invalide")
+    end
+  end
+
+  def credit_host
+    begin
+      amount_to_credit = set_total
+      if amount_to_credit > 0
+        workout.host.update!(credit: workout.host.credit.to_f + amount_to_credit)
+        return "Host has been paid successfully."
+      else
+        return "Invalid payment amount."
+      end
+    rescue => e
+      # Log the error message e.message if logging is set up
+      return "An error occurred during payment: #{e.message}"
+    end
+  end
+
+  def manage_email_and_credit_on_condition
     case status
-    # when "pending" # 0
+    when "pending" # 0
     #   puts "pending request"
     #   send_reservation_request_email
     when "accepted" # 1
       send_accepted_email
     when "refused" # 2
+      refund_user
       send_refused_email
     when "host_cancelled" # 3
+      refund_user
       send_workout_cancelled_email
     when "user_cancelled" # 4
+      refund_user
       send_reservation_cancelled_email
     when  "closed" # 5
+      credit_host
       # send email only if only user and/or host have not saved any evaluation for the participated workout
       send_evaluation_email
     end
