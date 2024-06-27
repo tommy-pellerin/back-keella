@@ -19,7 +19,7 @@ class ReservationsController < ApplicationController
   # POST /reservations
   def create
     @reservation = current_user.reservations.build(reservation_params)
-    if @reservation.valid? && @reservation.debit_user # Ensure reservation is valid and user is debited successfully
+    if @reservation.valid? # Ensure reservation is valid and user is debited successfully
       if @reservation.save
         render json: @reservation, status: :created, location: @reservation
       else

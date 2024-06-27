@@ -18,6 +18,7 @@ class Reservation < ApplicationRecord
   validate :past_workout
   validate :quantity_does_not_exceed_available_places
   validate :is_credit_enough, on: :create
+  after_create :debit_user
 
   def update_status_without_validation(new_status)
     self.status = new_status
@@ -25,42 +26,6 @@ class Reservation < ApplicationRecord
   end
 
   private
-
-  def debit_user
-      puts "$"*50
-      puts "user credit"
-      puts user.credit
-      puts "total price"
-      puts self.total
-      puts "$"*50
-      new_credit = user.credit.to_f - self.total
-      if new_credit >= 0
-        begin
-          user.update!(credit: new_credit)
-          true
-        rescue => e
-          errors.add(:base, "An error occurred during payment: #{e.message}")
-          false
-        end
-      else
-        errors.add(:base, "Invalid payment amount.")
-        false
-      end
-  end
-
-  # Ensure the user has enough credit to make the reservation
-  def is_credit_enough
-    total_price = self.total || 0
-    puts "#"*50
-    puts "user credit"
-    puts user.credit
-    puts "total price"
-    puts total_price
-    puts "#"*50
-    if user.credit < total_price
-      errors.add(:base, "Vous n'avez pas assez de crédit pour réserver ce cours.")
-    end
-  end
 
   def host_cannot_book_own_workout
     if workout.present? && user.id == workout.host.id
@@ -147,6 +112,26 @@ class Reservation < ApplicationRecord
     HostMailer.evaluate_user_email(self).deliver_now
   end
 
+  # Ensure the user has enough credit to make the reservation
+  def is_credit_enough
+    total_price = self.total || 0
+    puts "#"*50
+    puts "user credit"
+    puts user.credit
+    puts "total price"
+    puts total_price
+    puts "#"*50
+    if user.credit < total_price
+      errors.add(:base, "Vous n'avez pas assez de crédit pour réserver ce cours.")
+    end
+  end
+
+  # Debit user's credit after successful reservation
+  def debit_user
+    new_credit = user.credit - self.total
+    user.update(credit: new_credit)
+  end
+
   def refund_user
     amount_to_refund = set_total || 0
     current_credit = user.credit || 0
@@ -159,18 +144,13 @@ class Reservation < ApplicationRecord
   end
 
   def credit_host
-    begin
       amount_to_credit = set_total
       if amount_to_credit > 0
-        workout.host.update!(credit: workout.host.credit.to_f + amount_to_credit)
-        return "Host has been paid successfully."
+        new_credit = workout.host.credit.to_f + amount_to_credit
+        workout.host.update(credit: new_credit)
       else
-        return "Invalid payment amount."
+        errors.add(:base, "Il y a une erreur dans le processus de paiement de l'hote")
       end
-    rescue => e
-      # Log the error message e.message if logging is set up
-      return "An error occurred during payment: #{e.message}"
-    end
   end
 
   def manage_email_and_credit_on_condition
@@ -199,15 +179,5 @@ class Reservation < ApplicationRecord
 
   # for information, the above line is deprecated and replaced => the order of the element in the array is very very important !
   # see here : https://sparkrails.com/rails-7/2024/02/13/rails-7-deprecated-enum-with-keywords-args.html
-  # enum :status, {
-  #   pending: 0,
-  #   accepted: 1,
-  #   refused: 2,
-  #   host_cancelled: 3,
-  #   user_cancelled: 4,
-  #   closed: 5,
-  #   relaunched: 6
-  # }
-
   enum :status, [ :pending, :accepted, :refused, :host_cancelled, :user_cancelled, :closed, :relaunched ]
 end
