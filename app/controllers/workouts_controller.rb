@@ -35,7 +35,7 @@ class WorkoutsController < ApplicationController
         end_date: workout.end_date,
         available_places: workout.available_places,
         category: workout.category,
-        avatar: @workout.host.avatar.attached? ? url_for(@workout.host.avatar) : nil
+        avatar: workout.host.avatar.attached? ? url_for(workout.host.avatar) : nil
       })
     end
 
