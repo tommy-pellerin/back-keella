@@ -24,26 +24,39 @@ class Reservation < ApplicationRecord
     save(validate: false)
   end
 
-  def debit_user
-    begin
-      amount_to_debit = set_total
-      if amount_to_debit > 0
-        user.update!(credit: user.credit.to_f - amount_to_debit)
-        return "Host has been paid successfully."
-      else
-        return "Invalid payment amount."
-      end
-    rescue => e
-      # Log the error message e.message if logging is set up
-      return "An error occurred during payment: #{e.message}"
-    end
-  end
-
   private
+
+  def debit_user
+      puts "$"*50
+      puts "user credit"
+      puts user.credit
+      puts "total price"
+      puts self.total
+      puts "$"*50
+      new_credit = user.credit.to_f - self.total
+      if new_credit >= 0
+        begin
+          user.update!(credit: new_credit)
+          true
+        rescue => e
+          errors.add(:base, "An error occurred during payment: #{e.message}")
+          false
+        end
+      else
+        errors.add(:base, "Invalid payment amount.")
+        false
+      end
+  end
 
   # Ensure the user has enough credit to make the reservation
   def is_credit_enough
-    total_price = set_total || 0
+    total_price = self.total || 0
+    puts "#"*50
+    puts "user credit"
+    puts user.credit
+    puts "total price"
+    puts total_price
+    puts "#"*50
     if user.credit < total_price
       errors.add(:base, "Vous n'avez pas assez de crédit pour réserver ce cours.")
     end
