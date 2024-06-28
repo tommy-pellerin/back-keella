@@ -73,7 +73,7 @@ class Reservation < ApplicationRecord
   end
 
   def available_places
-    workout.present? ? workout.max_participants - workout.reservations.where(status: ['pending','accepted']).sum(:quantity) : 0
+    workout.present? ? workout.max_participants - workout.reservations.where(status: [ "pending", "accepted" ]).sum(:quantity) : 0
   end
 
   def already_full
@@ -151,6 +151,7 @@ class Reservation < ApplicationRecord
       else
         errors.add(:base, "Il y a une erreur dans le processus de paiement de l'hote")
       end
+
   end
 
   def manage_email_and_credit_on_condition
@@ -175,8 +176,6 @@ class Reservation < ApplicationRecord
       send_evaluation_email
     end
   end
-
-
   # for information, the above line is deprecated and replaced => the order of the element in the array is very very important !
   # see here : https://sparkrails.com/rails-7/2024/02/13/rails-7-deprecated-enum-with-keywords-args.html
   enum :status, [ :pending, :accepted, :refused, :host_cancelled, :user_cancelled, :closed, :relaunched ]

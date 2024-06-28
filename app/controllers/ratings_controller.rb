@@ -71,7 +71,7 @@ class RatingsController < ApplicationController
 
     def authorize_user!
       unless @rating.user_id == current_user.id
-        render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
+        render json: { error: "Vous n'êtes pas autorisé à effectuer cette action" }, status: :unauthorized
       end
     end
 

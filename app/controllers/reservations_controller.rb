@@ -23,11 +23,11 @@ class ReservationsController < ApplicationController
       if @reservation.save
         render json: @reservation, status: :created, location: @reservation
       else
-        render json: { error: @reservation.errors.full_messages.join(', ') }, status: :unprocessable_entity
+        render json: { error: @reservation.errors.full_messages.join(", ") }, status: :unprocessable_entity
       end
     else
       # Handle errors from debit operation or invalid reservation
-      render json: { error: @reservation.errors.full_messages.join(', ') }, status: :unprocessable_entity
+      render json: { error: @reservation.errors.full_messages.join(", ") }, status: :unprocessable_entity
     end
   end
 
@@ -69,17 +69,19 @@ class ReservationsController < ApplicationController
     def authorize_user!
       workout = @reservation.workout
       unless @reservation.user_id == current_user.id || workout.host_id == current_user.id
-        render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
+        render json: { error: "Vous n'êtes pas autorisé à effectuer cette action" }, status: :unauthorized
       end
     end
 
     def authorize_update
       if current_user == @reservation.workout.host
           @reservation_updatable_attributes = [ "status" ]
+          @allow_status_update = [ :accepted, :host_cancelled, :refused ]
       elsif current_user == @reservation.user
           @reservation_updatable_attributes = [ "quantity", "status" ]
+          @allow_status_update = [ :user_cancelled ]
       else
-          render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
+          render json: { error: "Vous n'êtes pas autorisé à effectuer cette action" }, status: :unauthorized
       end
     end
 
