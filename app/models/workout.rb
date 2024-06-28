@@ -1,5 +1,6 @@
 class Workout < ApplicationRecord
   after_update :closed_related_reservations, if: -> { saved_change_to_is_closed? && is_closed? }
+  before_destroy :closed_related_reservations
 
   belongs_to :host, class_name: "User"
   belongs_to :category
@@ -12,9 +13,9 @@ class Workout < ApplicationRecord
 
   # Associations pour les ratings recus pour le workout
   has_many :ratings, as: :rateable, dependent: :destroy
-  has_many :ratings_received, -> { where(rateable_type: "Workout") }, class_name: "Rating", foreign_key: "rateable_id"
+  has_many :ratings_received, -> { where(rateable_type: "Workout") }, class_name: "Rating", foreign_key: "rateable_id", dependent: :destroy
 
-  has_many_attached :workout_images
+  has_many_attached :workout_images, dependent: :destroy
 
   # Validations
   validates :host, presence: true
@@ -52,6 +53,10 @@ class Workout < ApplicationRecord
   }
 
   private
+
+  def closed_related_reservations
+    Reservation.where(workout_id: id).destroy_all
+  end
 
   def start_date_must_be_at_least_4_hours_from_now
     if start_date.present? && start_date <= Time.now + 4.hours
