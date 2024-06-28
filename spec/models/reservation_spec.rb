@@ -104,7 +104,6 @@ RSpec.describe Reservation, type: :model do
       new_workout = create(:workout, host: host, price: 20, max_participants: 10)
       new_reservation = create(:reservation, user: new_user, workout: new_workout, quantity: 5)
       reservation_cost = new_reservation.total
-      new_reservation.debit_user
       new_user.reload
       expect(new_user.credit).to eq(initial_credit - reservation_cost)
     end
