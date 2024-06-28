@@ -75,7 +75,7 @@ class WorkoutsController < ApplicationController
         },
         only: [ :id, :status ]
       },
-      ratings_received: { only: [ :id, :rating, :comment, :user_id ] }
+      ratings_received: { only: [ :id, :rating, :comment, :user_id,  ], include: { user: { only: [ :username ] } } }
     }).merge({
       end_date: @workout.end_date,
       available_places: @workout.available_places,
