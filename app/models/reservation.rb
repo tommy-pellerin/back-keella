@@ -29,13 +29,13 @@ class Reservation < ApplicationRecord
       amount_to_debit = set_total
       if amount_to_debit > 0
         user.update!(credit: user.credit.to_f - amount_to_debit)
-        return "Host has been paid successfully."
+        "Host has been paid successfully."
       else
-        return "Invalid payment amount."
+        "Invalid payment amount."
       end
     rescue => e
       # Log the error message e.message if logging is set up
-      return "An error occurred during payment: #{e.message}"
+      "An error occurred during payment: #{e.message}"
     end
   end
 
@@ -95,7 +95,7 @@ class Reservation < ApplicationRecord
   end
 
   def available_places
-    workout.present? ? workout.max_participants - workout.reservations.where(status: ['pending','accepted']).sum(:quantity) : 0
+    workout.present? ? workout.max_participants - workout.reservations.where(status: [ "pending", "accepted" ]).sum(:quantity) : 0
   end
 
   def already_full
@@ -150,13 +150,13 @@ class Reservation < ApplicationRecord
       amount_to_credit = set_total
       if amount_to_credit > 0
         workout.host.update!(credit: workout.host.credit.to_f + amount_to_credit)
-        return "Host has been paid successfully."
+        "Host has been paid successfully."
       else
-        return "Invalid payment amount."
+        "Invalid payment amount."
       end
     rescue => e
       # Log the error message e.message if logging is set up
-      return "An error occurred during payment: #{e.message}"
+      "An error occurred during payment: #{e.message}"
     end
   end
 
@@ -182,8 +182,6 @@ class Reservation < ApplicationRecord
       send_evaluation_email
     end
   end
-
-
   # for information, the above line is deprecated and replaced => the order of the element in the array is very very important !
   # see here : https://sparkrails.com/rails-7/2024/02/13/rails-7-deprecated-enum-with-keywords-args.html
   # enum :status, {
@@ -195,6 +193,5 @@ class Reservation < ApplicationRecord
   #   closed: 5,
   #   relaunched: 6
   # }
-
   enum :status, [ :pending, :accepted, :refused, :host_cancelled, :user_cancelled, :closed, :relaunched ]
 end

@@ -8,61 +8,10 @@ class WorkoutsController < ApplicationController
   def index
     @workouts = Workout.all.includes(:host, :category, :reservations)
 
-    # Tri
-    if params[:sort] == "creation"
-      @workouts = @workouts.sort_by_creation
-    elsif params[:sort] == "start_date"
-      @workouts = @workouts.sort_by_start_date
-    end
-
-    # Recherche
-    if params[:city].present?
-      @workouts = @workouts.where(city: params[:city])
-    end
-
-    if params[:date].present?
-      date = Date.parse(params[:date])
-      @workouts = @workouts.where(start_date: date.beginning_of_day..date.end_of_day)
-    end
-
-    if params[:time].present?
-      @workouts = @workouts.where('duration = ?', params[:time])
-    end
-
-    if params[:category_id].present?
-      @workouts = @workouts.where(category_id: params[:category_id])
-    end
-
-    # Filter participants
-    if params[:participants].present?
-      @workouts = @workouts.with_available_places(params[:participants].to_i)
-    end
-
-    # Pagination
-    page = (params[:page] || 1).to_i
-    page_size = (params[:page_size] || 10).to_i
-    @workouts = @workouts.offset((page - 1) * page_size).limit(page_size)
-
-    # Include image URLs
-    workouts_with_images = @workouts.map do |workout|
-      image_url = if workout.workout_images.attached?
-                    rails_blob_url(workout.workout_images.first)
-      elsif workout.category.category_image.attached?
-                    rails_blob_url(workout.category.category_image)
-      else
-                    nil
-      end
-
-      workout.as_json(include: { host: { only: [:username, :id] }, category: { only: [:name, :id] }}).merge({
-        image_url: image_url,
-        end_date: workout.end_date,
-        available_places: workout.available_places,
-        category: workout.category,
-        avatar: workout.host.avatar.attached? ? url_for(workout.host.avatar) : nil
-      })
-    end
-
-    render json: workouts_with_images
+    @workouts = filter_by_params(@workouts)
+    @workouts = sort_workouts_by_params(@workouts)
+    @workouts = paginate_workouts(@workouts)
+    render json: workouts_with_images(@workouts)
   end
 
   def show
@@ -149,5 +98,71 @@ class WorkoutsController < ApplicationController
     # Only allow a list of trusted parameters through.
     def workout_params
       params.require(:workout).permit(:title, :description, :start_date, :duration, :city, :zip_code, :price, :host_id, :max_participants, :category_id, :is_closed, workout_images: [])
+    end
+
+    def filter_by_params(workouts)
+      workouts = filter_by_city(workouts) if params[:city].present?
+      workouts = filter_by_date(workouts) if params[:date].present?
+      workouts = filter_by_time(workouts) if params[:time].present?
+      workouts = filter_by_category(workouts) if params[:category_id].present?
+      workouts = filter_by_participants(workouts) if params[:participants].present?
+      workouts
+    end
+
+    def filter_by_city(workouts)
+      workouts.where(city: params[:city])
+    end
+
+    def filter_by_date(workouts)
+      date = Date.parse(params[:date])
+      workouts.where(start_date: date.beginning_of_day..date.end_of_day)
+    end
+
+    def filter_by_time(workouts)
+      workouts.where("duration =?", params[:time])
+    end
+
+    def filter_by_category(workouts)
+      workouts.where(category_id: params[:category_id])
+    end
+
+    def filter_by_participants(workouts)
+      workouts.with_available_places(params[:participants].to_i)
+    end
+
+    def sort_workouts_by_params(workouts)
+      if params[:sort] == "creation"
+        workouts.sort_by_creation
+      elsif params[:sort] == "start_date"
+        workouts.sort_by_start_date
+      else
+        workouts
+      end
+    end
+
+    def paginate_workouts(workouts)
+      page = (params[:page] || 1).to_i
+      page_size = (params[:page_size] || 10).to_i
+      workouts.offset((page - 1) * page_size).limit(page_size)
+    end
+
+    def workouts_with_images(workouts)
+      workouts.map do |workout|
+        image_url = if workout.workout_images.attached?
+                      rails_blob_url(workout.workout_images.first)
+        elsif workout.category.category_image.attached?
+                      rails_blob_url(workout.category.category_image)
+        else
+                      nil
+        end
+
+        workout.as_json(include: { host: { only: [ :username, :id ] }, category: { only: [ :name, :id ] } }).merge({
+          image_url: image_url,
+          end_date: workout.end_date,
+          available_places: workout.available_places,
+          category: workout.category,
+          avatar: workout.host.avatar.attached?? url_for(workout.host.avatar) : nil
+        })
+      end
     end
 end

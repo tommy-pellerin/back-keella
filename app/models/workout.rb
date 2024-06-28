@@ -39,16 +39,16 @@ class Workout < ApplicationRecord
   def available_places
     puts self.participants
     if self.reservations
-      self.max_participants - self.reservations.where(status: ['pending','accepted']).sum(:quantity)
+      self.max_participants - self.reservations.where(status: [ "pending", "accepted" ]).sum(:quantity)
     else
       self.max_participants
     end
   end
 
   scope :with_available_places, ->(places) {
-    joins('LEFT JOIN reservations ON reservations.workout_id = workouts.id')
-    .group('workouts.id')
-    .having('max_participants - COALESCE(SUM(reservations.quantity), 0) >= ?', places)
+    joins("LEFT JOIN reservations ON reservations.workout_id = workouts.id")
+    .group("workouts.id")
+    .having("max_participants - COALESCE(SUM(reservations.quantity), 0) >= ?", places)
   }
 
   private
