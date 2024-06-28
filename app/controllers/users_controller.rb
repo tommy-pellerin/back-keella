@@ -20,6 +20,15 @@ class UsersController < ApplicationController
     end
   end
 
+  def destroy
+    if @user == current_user
+      @user.destroy
+      render json: { message: "Utilisateur supprimé" }, status: :ok
+    else
+      render json: { error: "Vous n'êtes pas autorisé à effectuer cette action" }, status: :unauthorized
+    end
+  end
+
   private
 
   def set_user

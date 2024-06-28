@@ -21,7 +21,8 @@ User.create(
   username: 'admin',
   email: 'admin@admin.fr',
   password: 'admin123',
-  isAdmin: true
+  isAdmin: true,
+  credit: 1000
 )
 puts 'Admin created'
 
@@ -32,6 +33,7 @@ ActionMailer::Base.perform_deliveries = false
     username: Faker::Name.first_name,
     email: Faker::Internet.email,
     password: 'password',
+    credit: 1000
   )
 end
 puts 'Users created'
@@ -55,7 +57,7 @@ puts 'Categories created'
     city: city,
     zip_code: Faker::Address.zip_code,
     price: rand(1..50),
-    max_participants: rand(1..10),
+    max_participants: rand(5..15),
     host: User.all.sample,
     category: category
   )
@@ -64,7 +66,7 @@ puts 'Workouts created'
 
 100.times do
   user = User.all.sample
-  quantity = rand(1..10)
+  quantity = rand(1..2)
   workout = Workout.all.sample
   while user == workout.host
     workout = Workout.all.sample
@@ -74,7 +76,6 @@ puts 'Workouts created'
     workout: workout,
     quantity: quantity,
     total: workout.price * quantity,
-    status: rand(0..2)
   )
 end
 ActionMailer::Base.perform_deliveries = true
@@ -111,7 +112,7 @@ Workout.all.each do |workout|
 end
 puts 'Ratings created'
 
-# # utilisateur pour test 
+# # utilisateur pour test
 # user1 = User.create(
 #   username: 'user1',
 #   email: 'user1@yopmail.com',
@@ -156,4 +157,3 @@ puts 'Ratings created'
 # end
 
 # puts '20 Reservations created for Workouts of User1'
-
