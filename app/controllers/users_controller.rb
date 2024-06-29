@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_user, only: [ :show ]
+  before_action :set_user, only: [ :show, :destroy]
 
   # GET /users
   def index
@@ -17,6 +17,18 @@ class UsersController < ApplicationController
       render json: user_json
     else
       render json: { error: "Utilisateur non trouvé" }, status: :not_found
+    end
+  end
+
+  # DELETE /users/:id
+  def destroy
+    puts @user.inspect
+    puts current_user.inspect
+    if @user == current_user
+      @user.destroy
+      render json: { message: "Utilisateur supprimé" }, status: :ok
+    else
+      render json: { error: "Vous n'êtes pas autorisé à effectuer cette action" }, status: :unauthorized
     end
   end
 

@@ -12,9 +12,9 @@ class Workout < ApplicationRecord
 
   # Associations pour les ratings recus pour le workout
   has_many :ratings, as: :rateable, dependent: :destroy
-  has_many :ratings_received, -> { where(rateable_type: "Workout") }, class_name: "Rating", foreign_key: "rateable_id"
+  has_many :ratings_received, -> { where(rateable_type: "Workout") }, class_name: "Rating", foreign_key: "rateable_id", dependent: :destroy
 
-  has_many_attached :workout_images
+  has_many_attached :workout_images, dependent: :destroy
 
   # Validations
   validates :host, presence: true

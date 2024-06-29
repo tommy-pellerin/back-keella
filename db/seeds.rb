@@ -21,7 +21,8 @@ User.create(
   username: 'admin',
   email: 'admin@admin.fr',
   password: 'admin123',
-  isAdmin: true
+  isAdmin: true,
+  credit: 1000
 )
 puts 'Admin created'
 
@@ -55,7 +56,7 @@ puts 'Categories created'
     city: city,
     zip_code: Faker::Address.zip_code,
     price: rand(1..50),
-    max_participants: rand(1..10),
+    max_participants: rand(5..15),
     host: User.all.sample,
     category: category
   )
@@ -64,7 +65,7 @@ puts 'Workouts created'
 
 100.times do
   user = User.all.sample
-  quantity = rand(1..10)
+  quantity = rand(1..2)
   workout = Workout.all.sample
   while user == workout.host
     workout = Workout.all.sample

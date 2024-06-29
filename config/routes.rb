@@ -8,12 +8,16 @@ Rails.application.routes.draw do
   resources :categories
   resources :reservations
   resources :workouts
-  resources :users, only: [ :index, :show ]
+  
   devise_for :users, controllers: {
     sessions: "users/sessions",
     registrations: "users/registrations",
     passwords: "users/passwords"
   }
+  devise_scope :user do
+    delete "sign_out", to: "users/sessions#destroy"
+  end
+  resources :users, only: [ :index, :show, :destroy ]
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

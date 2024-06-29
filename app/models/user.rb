@@ -4,12 +4,12 @@ class User < ApplicationRecord
   has_many :hosted_workouts, foreign_key: "host_id", class_name: "Workout", dependent: :destroy
   # Quand il est participant
   has_many :reservations, dependent: :destroy
-  has_many :participated_workouts, through: :reservations, source: :workout
+  has_many :participated_workouts, through: :reservations, source: :workout, dependent: :destroy
 
   has_many :ratings, dependent: :destroy
-  has_many :ratings_received, -> { where(rateable_type: "User") }, class_name: "Rating", foreign_key: "rateable_id"
+  has_many :ratings_received, -> { where(rateable_type: "User") }, class_name: "Rating", foreign_key: "rateable_id", dependent: :destroy
 
-  has_one_attached :avatar
+  has_one_attached :avatar, dependent: :destroy
 
   validates :username, presence: true, uniqueness: true
 
