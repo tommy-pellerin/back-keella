@@ -27,8 +27,6 @@ class UsersController < ApplicationController
 
   # DELETE /users/:id
   def destroy
-    puts @user.inspect
-    puts current_user.inspect
     if @user == current_user
       @user.destroy
       render json: { message: "Utilisateur supprimé" }, status: :ok
