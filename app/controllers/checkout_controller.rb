@@ -1,23 +1,18 @@
 class CheckoutController < ApplicationController
-  before_action :authenticate_user!, except: [:refund_payment]
+  before_action :authenticate_user!, except: [ :refund_payment ]
 
   def create
     @url = "https://front-keella.vercel.app/payment"
     # @url = "http://localhost:5173/payment"
-    puts "#"*50
-    puts "Je suis dans create de checkout_controller.rb"
-    puts params
-    puts "#"*50
     @total = params[:total].to_d
     # @user_id = params[:user_id]
     @user = current_user
     # @user = User.find(params[:user_id])
-
     # Generate a unique token
     @sessionToken = SecureRandom.uuid
-    
+
     @session = Stripe::Checkout::Session.create(
-      payment_method_types: ['card'],
+      payment_method_types: [ "card" ],
       metadata: {
         # user_id: @user_id,
         token: @sessionToken
@@ -25,14 +20,14 @@ class CheckoutController < ApplicationController
       line_items: [
         {
           price_data: {
-            currency: 'eur',
+            currency: "eur",
             unit_amount: (@total*100).to_i,
             product_data: {
-              name: 'Credit à recharger',
-            },
+              name: "Credit à recharger"
+            }
           },
           quantity: 1
-        },
+        }
       ],
       mode: "payment",
       # méthode avec page paiement gébergé par stripe
@@ -48,30 +43,20 @@ class CheckoutController < ApplicationController
   end
 
   def success
-    puts "#"*50
-    puts "checkout params:"
-    puts checkout_params
     # Retrieve session_id from checkout_params
     session_id = checkout_params[:session_id]
-
     # Retrieve the session from Stripe using the session_id
     @session = Stripe::Checkout::Session.retrieve(session_id)
     @payment_intent = Stripe::PaymentIntent.retrieve(@session.payment_intent)
-    puts "#"*50
-    puts "success payment"
-
     @user = current_user
-    puts @user
     # Check if the token in the URL matches the token stored with the user
     # Retrieve session_token from checkout_params
     session_token = checkout_params[:session_token]
     puts "session_token:"
     puts session_token
     if session_token == @user.session_token
-      puts "proceder à la recharge"
       payment_proceed(@user, @payment_intent)
     else
-      puts "refus car session_token ne correspond pas"
       # If the tokens do not match, redirect the user
       render json: { error: "Access refusé car le paiement a déjà été traité" }, status: :forbidden
     end
@@ -82,14 +67,12 @@ class CheckoutController < ApplicationController
     session_id = params[:session_id] # Ou utilisez params[:payment_intent_id] si vous avez l'ID de l'intention de paiement
     session = Stripe::Checkout::Session.retrieve(session_id)
     payment_intent_id = session.payment_intent
-  
+
     # Récupère les détails de l'intention de paiement pour obtenir le montant et l'email du client
     payment_intent = Stripe::PaymentIntent.retrieve(payment_intent_id)
-  
+
     # Déterminez le montant du remboursement ici. Pour un remboursement complet, utilisez payment_intent.amount_received
     refund_amount = payment_intent.amount_received # ou un montant partiel spécifique
-    puts "amount to refund :"
-    puts refund_amount
 
     # Déduire les frais de services selon si la carte est international ou européen ou britanique
     # total_refund_amount = (refund_amount - 0.25*100 - (refund_amount*3.25/100).round).round  # only for international carte (used by stripe)
@@ -99,13 +82,12 @@ class CheckoutController < ApplicationController
     # Attention au frais de service de STRIPE qui doit etre calculé à la main 1.5% + 0.25€
     refund = Stripe::Refund.create({
       payment_intent: payment_intent_id,
-      amount: refund_amount,
+      amount: refund_amount
     })
-  
     # Répond avec les détails du remboursement
-    render json: { status: 'success', refund: refund }
+    render json: { status: "success", refund: refund }
   rescue Stripe::StripeError => e
-    render json: { status: 'error', message: e.message }, status: :bad_request
+    render json: { status: "error", message: e.message }, status: :bad_request
   end
 
   private

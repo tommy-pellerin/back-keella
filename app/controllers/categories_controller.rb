@@ -20,7 +20,6 @@ class CategoriesController < ApplicationController
       workouts: category.workouts
       )
     end
-  
     render json: @categories
   end
 
