@@ -15,7 +15,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
   def respond_with(resource, _opts = {})
     register_success && return if resource.persisted?
 
-    register_failed
+    register_failed(resource)
   end
 
   def register_success
@@ -25,9 +25,9 @@ class Users::RegistrationsController < Devise::RegistrationsController
     }, status: :ok
   end
 
-  def register_failed
+  def register_failed(resource)
     render json: {
-      message: "Something went wrong. #{resource.errors.full_messages.join(' ')}"
+      message: "Erreur d'inscription. #{resource.errors.full_messages.join('. ')}"
     }, status: :unprocessable_entity
   end
 
