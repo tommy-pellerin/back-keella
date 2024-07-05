@@ -2,12 +2,14 @@ class CheckoutController < ApplicationController
   before_action :authenticate_user!, except: [ :refund_payment ]
 
   def create
-    @url = "https://front-keella.vercel.app/payment"
-    # @url = "http://localhost:5173/payment"
+    if Rails.env.production?
+      @url = "https://front-keella.vercel.app/payment"
+    else
+      @url = "http://localhost:5173/payment"
+    end
+
     @total = params[:total].to_d
-    # @user_id = params[:user_id]
     @user = current_user
-    # @user = User.find(params[:user_id])
     # Generate a unique token
     @sessionToken = SecureRandom.uuid
 
@@ -52,8 +54,6 @@ class CheckoutController < ApplicationController
     # Check if the token in the URL matches the token stored with the user
     # Retrieve session_token from checkout_params
     session_token = checkout_params[:session_token]
-    puts "session_token:"
-    puts session_token
     if session_token == @user.session_token
       payment_proceed(@user, @payment_intent)
     else
@@ -76,8 +76,6 @@ class CheckoutController < ApplicationController
 
     # Déduire les frais de services selon si la carte est international ou européen ou britanique
     # total_refund_amount = (refund_amount - 0.25*100 - (refund_amount*3.25/100).round).round  # only for international carte (used by stripe)
-    # puts "total to refund :"
-    # puts total_refund_amount.round
     # Créez le remboursement
     # Attention au frais de service de STRIPE qui doit etre calculé à la main 1.5% + 0.25€
     refund = Stripe::Refund.create({

@@ -115,12 +115,7 @@ class Reservation < ApplicationRecord
   # Ensure the user has enough credit to make the reservation
   def is_credit_enough
     total_price = self.total || 0
-    puts "#"*50
-    puts "user credit"
-    puts user.credit
-    puts "total price"
-    puts total_price
-    puts "#"*50
+
     if user.credit < total_price
       errors.add(:base, "Vous n'avez pas assez de crédit pour réserver ce cours.")
     end
@@ -129,7 +124,13 @@ class Reservation < ApplicationRecord
   # Debit user's credit after successful reservation
   def debit_user
     new_credit = user.credit - self.total
-    user.update(credit: new_credit)
+    if user.update(credit: new_credit)
+      return true # Successfully debited user
+    else
+      # Handle the case where the user's credit couldn't be updated for some reason
+      errors.add(:user_credit, "Impossible de mettre à jour le crédit de l'utilisateur.")
+      return false
+    end
   end
 
   def refund_user

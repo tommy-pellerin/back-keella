@@ -38,7 +38,6 @@ class Workout < ApplicationRecord
   end
 
   def available_places
-    puts self.participants
     if self.reservations
       self.max_participants - self.reservations.where(status: [ "pending", "accepted" ]).sum(:quantity)
     else
