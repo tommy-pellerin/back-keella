@@ -7,36 +7,47 @@ class RatingsController < ApplicationController
   def index
     @ratings = Rating.all
 
-    render json: @ratings
+    render json: @ratings.to_json(include: { user: { only: [:id, :username] } })
   end
 
   # GET /ratings/1
   def show
-    render json: @rating
+    render json: @ratings.to_json(include: { user: { only: [:id, :username] } })
   end
 
   # POST /ratings
   def create
-    @rating = Rating.build(rating_params)
+    Rails.logger.info "Raw params: #{params.inspect}"
+    Rails.logger.info "Received params: #{rating_params.inspect}"
+    @rating = Rating.new(rating_params)
     @rating.user = current_user
+
     workout_id = rating_params[:workout_id]
-    workout = Workout.find(workout_id)
+
+    if workout_id.nil?
+      render json: { error: "workout_id is missing" }, status: :unprocessable_entity
+      return
+    end
+
+    begin
+      workout = Workout.find(workout_id)
+    rescue ActiveRecord::RecordNotFound
+      render json: { error: "Workout not found" }, status: :unprocessable_entity
+      return
+    end
 
     if workout.is_closed
-      if @rating.valid_rating_context?(current_user, @rating, workout_id)
-        if @rating.save
-          render json: @rating, status: :created, location: @rating
-        else
-          render json: @rating.errors, status: :unprocessable_entity
-          Rails.logger.error "Error while creating rating: " + @rating.errors.full_messages.join(", ") + " - " + @rating.inspect
-        end
+      if @rating.save
+        render json: @rating, status: :created, location: @rating
       else
-        render json: { error: "Vous ne pouvez pas noter cette ressource" }, status: :unprocessable_entity
+        render json: @rating.errors, status: :unprocessable_entity
+        Rails.logger.error "Error while creating rating: " + @rating.errors.full_messages.join(", ") + " - " + @rating.inspect
       end
     else
       render json: { error: "Le workout n'est pas encore terminé" }, status: :unprocessable_entity
     end
   end
+
 
   # PATCH/PUT /ratings/1
   def update
@@ -60,12 +71,15 @@ class RatingsController < ApplicationController
 
     def authorize_user!
       unless @rating.user_id == current_user.id
-        render json: { error: "You are not authorized to perform this action" }, status: :unauthorized
+        render json: { error: "Vous n'êtes pas autorisé à effectuer cette action" }, status: :unauthorized
       end
     end
 
     # Only allow a list of trusted parameters through.
     def rating_params
-      params.require(:rating).permit(:rating, :comment, :rateable_type, :rateable_id, :workout_id)
+      params.require(:rating).permit(:rateable_type, :rateable_id, :workout_id, :rating, :comment)
+    rescue ActionController::ParameterMissing => e
+      Rails.logger.error "ParameterMissing: #{e.message}"
+      raise
     end
 end

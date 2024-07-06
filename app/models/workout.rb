@@ -1,5 +1,6 @@
 class Workout < ApplicationRecord
   after_update :closed_related_reservations, if: -> { saved_change_to_is_closed? && is_closed? }
+  before_destroy :closed_related_reservations
 
   belongs_to :host, class_name: "User"
   belongs_to :category
@@ -39,19 +40,23 @@ class Workout < ApplicationRecord
   def available_places
     puts self.participants
     if self.reservations
-      self.max_participants - self.reservations.where(status: ['pending','accepted']).sum(:quantity)
+      self.max_participants - self.reservations.where(status: [ "pending", "accepted" ]).sum(:quantity)
     else
       self.max_participants
     end
   end
 
   scope :with_available_places, ->(places) {
-    joins('LEFT JOIN reservations ON reservations.workout_id = workouts.id')
-    .group('workouts.id')
-    .having('max_participants - COALESCE(SUM(reservations.quantity), 0) >= ?', places)
+    joins("LEFT JOIN reservations ON reservations.workout_id = workouts.id")
+    .group("workouts.id")
+    .having("max_participants - COALESCE(SUM(reservations.quantity), 0) >= ?", places)
   }
 
   private
+
+  def closed_related_reservations
+    Reservation.where(workout_id: id).destroy_all
+  end
 
   def start_date_must_be_at_least_4_hours_from_now
     if start_date.present? && start_date <= Time.now + 4.hours
