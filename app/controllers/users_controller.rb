@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_user, only: [ :show ]
+  before_action :set_user, only: [ :show, :destroy]
 
   # GET /users
   def index
@@ -11,7 +11,14 @@ class UsersController < ApplicationController
   # GET /users/:id
   def show
     if @user
-      user_json = @user.as_json(include: [ :reservations, :hosted_workouts, :participated_workouts, ratings_received: { include: { user: { only: [ :username ] } } } ])
+
+      user_json = @user.as_json(include: {
+        reservations: {},
+        hosted_workouts: { include: :reservations }, # Inclut les réservations pour chaque hosted_workout
+        participated_workouts: {},
+        ratings_received: { include: { user: { only: [ :username ] } } }
+      })
+
       user_json[:avatar] = @user.avatar.attached? ? url_for(@user.avatar) : nil
       user_json[:average_rating] = @user.ratings_received.any? ? @user.ratings_received.average(:rating).round(1) : 0
       render json: user_json
@@ -20,6 +27,7 @@ class UsersController < ApplicationController
     end
   end
 
+  # DELETE /users/:id
   def destroy
     if @user == current_user
       @user.destroy
