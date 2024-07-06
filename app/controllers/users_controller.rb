@@ -14,7 +14,7 @@ class UsersController < ApplicationController
 
       user_json = @user.as_json(include: {
         reservations: {},
-        hosted_workouts: { include: :reservations }, # Inclut les réservations pour chaque hosted_workout
+        hosted_workouts: { include: :reservations },
         participated_workouts: { include: { host: { only: [ :username, :email ] } } },
         ratings_received: { include: { user: { only: [ :username ] } } }
       })
