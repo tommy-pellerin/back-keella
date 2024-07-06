@@ -15,7 +15,7 @@ Rails.application.routes.draw do
     passwords: "users/passwords"
   }
   devise_scope :user do
-    delete 'sign_out', to: 'users/sessions#destroy'
+    delete "sign_out", to: "users/sessions#destroy"
   end
   resources :users, only: [ :index, :show, :destroy ]
 
