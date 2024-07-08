@@ -2,6 +2,7 @@
 require 'rails_helper'
 
 RSpec.describe "/workouts", type: :request do
+  # ActionMailer::Base.perform_deliveries = false
   let(:user) { create(:user) }
   let(:user1) { create(:user) }
   let(:admin) { create(:user, isAdmin: true) }

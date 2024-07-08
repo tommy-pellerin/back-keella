@@ -64,7 +64,8 @@ class WorkoutsController < ApplicationController
 
   # PATCH/PUT /workouts/1
   def update
-    if @workout.reservations.any? && !current_user.isAdmin?
+    # Check if all reservations have a status other than "pending", "accepted", and "closed"
+    if @workout.reservations.any? { |reservation| ["pending", "accepted", "closed"].include?(reservation.status) } && !current_user.isAdmin?
       render json: { error: "Vous ne pouvez pas modifier un workout qui a déjà des réservations" }, status: :unauthorized
     elsif @workout.update!(workout_params)
       render json: @workout

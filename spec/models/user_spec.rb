@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe User, type: :model do
+  # ActionMailer::Base.perform_deliveries = false
+  
   let(:user) { build(:user) }
 
   context 'validations' do
