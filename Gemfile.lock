@@ -110,6 +110,8 @@ GEM
       railties (>= 4.1.0)
       responders
       warden (~> 1.2.3)
+    devise-i18n (1.12.1)
+      devise (>= 4.9.0)
     devise-jwt (0.11.0)
       devise (~> 4.0)
       warden-jwt_auth (~> 0.8)
@@ -322,6 +324,7 @@ DEPENDENCIES
   brakeman
   debug
   devise
+  devise-i18n
   devise-jwt
   dockerfile-rails (>= 1.6)
   dotenv
