@@ -8,6 +8,7 @@ Rails.application.routes.draw do
   resources :categories
   resources :reservations
   resources :workouts
+  
   devise_for :users, controllers: {
     sessions: "users/sessions",
     registrations: "users/registrations",

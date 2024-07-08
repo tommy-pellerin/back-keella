@@ -4,7 +4,7 @@
 
 ## Description
 
-KEELLA Back API est une plateforme de location en ligne qui met en relation des personnes souhaitant louer des �quipements sportifs et des espaces pour pratiquer des activités sportives. Inspirée par le modéle d'Airbnb, elle se concentre spécifiquement sur le domaine sportif.
+KEELLA Back API est une plateforme de location en ligne qui met en relation des personnes souhaitant louer des équipements sportifs et des espaces pour pratiquer des activités sportives. Inspirée par le modéle d'Airbnb, elle se concentre spécifiquement sur le domaine sportif.
 
 Les utilisateurs peuvent parcourir une variété d'équipements sportifs et d'espaces disponibles dans leur région ou dans un lieu qu'ils prévoient de visiter. Ils peuvent réserver et payer la location directement via l'application, offrant une commodité et une sécurité similaires à celles d'Airbnb.
 
@@ -12,27 +12,27 @@ De plus, les personnes qui possédent des équipements sportifs ou des espaces q
 
 En somme, votre application offre une solution pratique et économique pour les amateurs de sport, tout en créant une nouvelle source de revenus pour les propriétaires d'équipements et d'espaces sportifs.
 
-## Fonctionnalit�s
+## Fonctionnalités
 
-- **Authentification des utilisateurs :** Connexion et inscription s�curis�es pour les utilisateurs et les administrateurs.
-- **Annonces d'�quipements et d'espaces :** Parcourir et rechercher des �quipements sportifs et des espaces disponibles.
-- **Syst�me de r�servation :** R�server et payer les locations directement via l'application.
-- **Notes et avis :** Noter et commenter les �quipements et les espaces apr�s utilisation.
-- **Panneau d'administration :** G�rer les utilisateurs, les r�servations et les annonces.
+- **Authentification des utilisateurs :** Connexion et inscription sécurisées pour les utilisateurs et les administrateurs.
+- **Annonces d'équipements et d'espaces :** Parcourir et rechercher des équipements sportifs et des espaces disponibles.
+- **Système de réservation :** Réserver et payer les locations directement via l'application.
+- **Notes et avis :** Noter et commenter les équipements et les espaces après utilisation.
+- **Panneau d'administration :** Gérer les utilisateurs, les réservations et les annonces.
 
-## Sch�ma de la base de donn�es
+## Schéma de la base de données
 
-Le sch�ma de la base de donn�es inclut les tables suivantes :
+Le schéma de la base de données inclut les tables suivantes :
 
-- **users :** Stocke les informations des utilisateurs, y compris le nom d'utilisateur, l'email, le mot de passe, le statut d'administrateur et les cr�dits.
+- **users :** Stocke les informations des utilisateurs, y compris le nom d'utilisateur, l'email, le mot de passe, le statut d'administrateur et les crédits.
 - **categories :** Stocke les catégories d'activités sportives.
-- **workouts :** Stocke les informations sur les activit�s sportives disponibles, y compris le titre, la description, la ville, le code postal, le prix, la date de d�but, la dur�e, le nombre maximal de participants et le statut.
+- **workouts :** Stocke les informations sur les activités sportives disponibles, y compris le titre, la description, la ville, le code postal, le prix, la date de début, la durée, le nombre maximal de participants et le statut.
 - **reservations :** Stocke les détails des réservations, y compris la quantité, le prix total, le statut et la date de création.
 - **ratings :** Stocke les notes et commentaires des utilisateurs sur les activités sportives.
 
 ## Commencer
 
-### Pr�requis
+### Prérequis
 
 - Ruby 3.0.0
 - Rails 7.0.0
@@ -40,14 +40,14 @@ Le sch�ma de la base de donn�es inclut les tables suivantes :
 
 ### Installation
 
-1. Cloner le d�p�t
+1. Cloner le dépôt
 
    ```shell
    git clone https://github.com/tommy-pellerin/back-keella.git
    cd back-keella
    ```
 
-2. Installer les d�pendances
+2. Installer les dépendances
 
    ```shell
    bundle install
