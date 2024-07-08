@@ -20,7 +20,7 @@ class WorkoutsController < ApplicationController
       category: { only: [ :name ] },
       reservations: {
         include: {
-          user: { only: [ :username, :id, :avatar ] }
+          user: { only: [ :username, :email, :id, :avatar ] }
         },
         only: [ :id, :status ]
       },
