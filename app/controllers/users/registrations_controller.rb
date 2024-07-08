@@ -6,7 +6,6 @@ class Users::RegistrationsController < Devise::RegistrationsController
   def update_resource(resource, params)
     resource.update_without_password(params)
     unless resource.errors.empty?
-    puts resource.errors.full_messages
     end
   end
 
@@ -15,7 +14,7 @@ class Users::RegistrationsController < Devise::RegistrationsController
   def respond_with(resource, _opts = {})
     register_success && return if resource.persisted?
 
-    register_failed
+    register_failed(resource)
   end
 
   def register_success
@@ -25,9 +24,9 @@ class Users::RegistrationsController < Devise::RegistrationsController
     }, status: :ok
   end
 
-  def register_failed
+  def register_failed(resource)
     render json: {
-      message: "Something went wrong. #{resource.errors.full_messages.join(' ')}"
+      message: "Erreur d'inscription. #{resource.errors.full_messages.join('. ')}"
     }, status: :unprocessable_entity
   end
 
