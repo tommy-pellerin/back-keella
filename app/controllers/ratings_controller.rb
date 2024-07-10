@@ -10,6 +10,7 @@ class RatingsController < ApplicationController
     ratings_json = @ratings.map do |rating|
       rating.as_json(include: { user: { only: [:id, :username] } }).merge({
         created_at: rating.created_at,
+        user_avatar: rating.user.avatar.attached? ? url_for(rating.user.avatar) : nil
       })
     end
 
