@@ -6,13 +6,23 @@ class RatingsController < ApplicationController
   # GET /ratings
   def index
     @ratings = Rating.all
+    
+    ratings_json = @ratings.map do |rating|
+      rating.as_json(include: { user: { only: [:id, :username] } }).merge({
+        created_at: rating.created_at,
+      })
+    end
 
-    render json: @ratings.to_json(include: { user: { only: [:id, :username] } })
+    render json: ratings_json
   end
 
   # GET /ratings/1
   def show
-    render json: @ratings.to_json(include: { user: { only: [:id, :username] } })
+    rating_json = @rating.as_json(include: { user: { only: [:id, :username] } }).merge({
+      created_at: @rating.created_at,
+    })
+
+    render json: rating_json
   end
 
   # POST /ratings
