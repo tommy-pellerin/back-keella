@@ -24,16 +24,25 @@ class WorkoutsController < ApplicationController
         },
         only: [ :id, :status ]
       },
-      ratings_received: { only: [ :id, :rating, :comment, :user_id,  ], include: { user: { only: [ :username ] } } }
-    }).merge({
-      end_date: @workout.end_date,
-      available_places: @workout.available_places,
-      average_rating: @workout.ratings_received.any? ? @workout.ratings_received.average(:rating).round(1) : 0,
-      host_avatar: @workout.host.avatar.attached? ? url_for(@workout.host.avatar) : nil,
-      reservations_user_avatars: @workout.reservations.includes(:user).map do |reservation|
-        { reservation_id: reservation.id, user_avatar: reservation.user.avatar.attached? ? url_for(reservation.user.avatar) : nil }
-      end
-    })
+      ratings_received: { only: [ :id, :rating, :comment, :user_id, :created_at ], include: { user: { only: [ :username ] } } }
+      }).merge({
+        end_date: @workout.end_date,
+        available_places: @workout.available_places,
+        average_rating: @workout.ratings_received.any? ? @workout.ratings_received.average(:rating).round(1) : 0,
+        host_avatar: @workout.host.avatar.attached? ? url_for(@workout.host.avatar) : nil,
+        reservations_user_avatars: @workout.reservations.includes(:user).map do |reservation|
+          {
+            reservation_id: reservation.id,
+            user_avatar: reservation.user.avatar.attached? ? url_for(reservation.user.avatar) : nil
+          }
+        end,
+        ratings_received_user_avatars: @workout.ratings_received.includes(:user).map do |rating|
+          {
+            rating_id: rating.id,
+            user_avatar: rating.user.avatar.attached? ? url_for(rating.user.avatar) : nil
+          }
+        end
+      })
 
     if @workout.workout_images.attached?
       workout_json[:image_urls] = @workout.workout_images.map { |image| rails_blob_url(image) }

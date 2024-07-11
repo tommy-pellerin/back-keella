@@ -6,13 +6,24 @@ class RatingsController < ApplicationController
   # GET /ratings
   def index
     @ratings = Rating.all
+    
+    ratings_json = @ratings.map do |rating|
+      rating.as_json(include: { user: { only: [:id, :username] } }).merge({
+        created_at: rating.created_at,
+        user_avatar: rating.user.avatar.attached? ? url_for(rating.user.avatar) : nil
+      })
+    end
 
-    render json: @ratings.to_json(include: { user: { only: [:id, :username] } })
+    render json: ratings_json
   end
 
   # GET /ratings/1
   def show
-    render json: @ratings.to_json(include: { user: { only: [:id, :username] } })
+    rating_json = @rating.as_json(include: { user: { only: [:id, :username] } }).merge({
+      created_at: @rating.created_at,
+    })
+
+    render json: rating_json
   end
 
   # POST /ratings
@@ -36,16 +47,16 @@ class RatingsController < ApplicationController
       return
     end
 
-    if workout.is_closed
+    # if workout.is_closed
       if @rating.save
         render json: @rating, status: :created, location: @rating
       else
         render json: @rating.errors, status: :unprocessable_entity
         Rails.logger.error "Error while creating rating: " + @rating.errors.full_messages.join(", ") + " - " + @rating.inspect
       end
-    else
-      render json: { error: "Le workout n'est pas encore terminé" }, status: :unprocessable_entity
-    end
+    # else
+    #   render json: { error: "Le workout n'est pas encore terminé" }, status: :unprocessable_entity
+    # end
   end
 
 

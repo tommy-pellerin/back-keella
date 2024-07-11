@@ -17,10 +17,18 @@ class UsersController < ApplicationController
         hosted_workouts: { include: :reservations },
         participated_workouts: { include: { host: { only: [ :username, :email ] } } },
         ratings_received: { include: { user: { only: [ :username ] } } }
+      }).merge({
+        avatar: @user.avatar.attached? ? url_for(@user.avatar) : nil,
+        average_rating: @user.ratings_received.any? ? @user.ratings_received.average(:rating).round(1) : 0,
+        ratings_received_user_avatars: @user.ratings_received.includes(:user).map do |rating|
+          {
+            rating_id: rating.id,
+            user_avatar: rating.user.avatar.attached? ? url_for(rating.user.avatar) : nil
+          }
+        end
       })
 
-      user_json[:avatar] = @user.avatar.attached? ? url_for(@user.avatar) : nil
-      user_json[:average_rating] = @user.ratings_received.any? ? @user.ratings_received.average(:rating).round(1) : 0
+      
       render json: user_json
     else
       render json: { error: "Utilisateur non trouvé" }, status: :not_found
