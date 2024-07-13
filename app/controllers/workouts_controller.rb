@@ -8,6 +8,8 @@ class WorkoutsController < ApplicationController
   def index
     @workouts = Workout.all.includes(:host, :category, :reservations)
 
+    @workouts = filter_by_future_start_date(@workouts)
+
     @workouts = filter_by_params(@workouts)
     @workouts = sort_workouts_by_params(@workouts)
     @workouts = paginate_workouts(@workouts)
@@ -74,7 +76,7 @@ class WorkoutsController < ApplicationController
   # PATCH/PUT /workouts/1
   def update
     # Check if all reservations have a status other than "pending", "accepted", and "closed"
-    if @workout.reservations.any? { |reservation| ["pending", "accepted", "closed"].include?(reservation.status) } && !current_user.isAdmin?
+    if @workout.reservations.any? { |reservation| [ "pending", "accepted", "closed" ].include?(reservation.status) } && !current_user.isAdmin?
       render json: { error: "Vous ne pouvez pas modifier un workout qui a déjà des réservations" }, status: :unauthorized
     elsif @workout.update!(workout_params)
       render json: @workout
@@ -108,6 +110,10 @@ class WorkoutsController < ApplicationController
     # Only allow a list of trusted parameters through.
     def workout_params
       params.require(:workout).permit(:title, :description, :start_date, :duration, :city, :zip_code, :price, :host_id, :max_participants, :category_id, :is_closed, workout_images: [])
+    end
+
+    def filter_by_future_start_date(workouts)
+      workouts.where("start_date > ?", DateTime.now)
     end
 
     def filter_by_params(workouts)
