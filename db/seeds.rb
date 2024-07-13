@@ -15,7 +15,7 @@ Rating.destroy_all
 Reservation.destroy_all
 Workout.destroy_all
 User.destroy_all
-Category.destroy_all
+# Category.destroy_all
 
 User.create(
   username: 'admin',
@@ -38,15 +38,15 @@ ActionMailer::Base.perform_deliveries = false
 end
 puts 'Users created'
 
-categories = [ 'Yoga', 'Crossfit', 'Boxing', 'Course', 'Dance', 'Meditation', 'Pilates', 'Velos', 'Escalade', 'Gymnastique', 'Randonnees', 'Natation', 'Tennis', 'Football', 'Basketball', 'Volleyball', 'Handball', 'Rugby', 'Golf', 'Equitation' ]
-categories.each do |category|
-  Category.create(
-    name: category
-  )
-end
-puts 'Categories created'
+# categories = [ 'Yoga', 'Crossfit', 'Boxing', 'Course', 'Dance', 'Meditation', 'Pilates', 'Velos', 'Escalade', 'Gymnastique', 'Randonnees', 'Natation', 'Tennis', 'Football', 'Basketball', 'Volleyball', 'Handball', 'Rugby', 'Golf', 'Equitation' ]
+# categories.each do |category|
+#   Category.create(
+#     name: category
+#   )
+# end
+# puts 'Categories created'
 
-20.times do
+40.times do
   city = Faker::Address.city
   category = Category.all.sample
   Workout.create(
