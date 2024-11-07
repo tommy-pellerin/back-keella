@@ -1,4 +1,4 @@
 class ApplicationMailer < ActionMailer::Base
-  default from: ENV['MAILJET_NOREPLY_FROM']
+  default from: ENV["MAILJET_DEFAULT_FROM"]
   layout "mailer"
 end

@@ -1,5 +1,5 @@
 class UserMailer < ApplicationMailer
-  default from: ENV['MAILJET_NOREPLY_FROM']
+  default from: ENV["MAILJET_DEFAULT_FROM"]
 
   def welcome_email(user)
     @user = user
@@ -10,7 +10,7 @@ class UserMailer < ApplicationMailer
   def payment_confirmation_email(user, payment_intent)
     @user = user
     @paid_amount = (payment_intent.amount_received.to_f/100)
-    mail(to: @user.email, subject: 'Confirmation de votre paiement')
+    mail(to: @user.email, subject: "Confirmation de votre paiement")
   end
 
   def accepted_email(reservation)
@@ -18,7 +18,7 @@ class UserMailer < ApplicationMailer
     @host = @reservation.workout.host
     @user = @reservation.user
     @workout = @reservation.workout
-    mail(to: @user.email, subject: 'Bonne nouvelle, votre réservation a été acceptée')
+    mail(to: @user.email, subject: "Bonne nouvelle, votre réservation a été acceptée")
   end
 
   def refused_email(reservation)
@@ -26,7 +26,7 @@ class UserMailer < ApplicationMailer
     @host = @reservation.workout.host
     @user = @reservation.user
     @workout = @reservation.workout
-    mail(to: @user.email, subject: 'Mauvaise nouvelle, votre réservation a été refusée')
+    mail(to: @user.email, subject: "Mauvaise nouvelle, votre réservation a été refusée")
   end
 
   def evaluate_host_email(reservation)
@@ -34,7 +34,7 @@ class UserMailer < ApplicationMailer
     @host = @reservation.workout.host
     @user = @reservation.user
     @workout = @reservation.workout
-    mail(to: @user.email, subject: 'Séance terminée, merci pour votre confiance')
+    mail(to: @user.email, subject: "Séance terminée, merci pour votre confiance")
   end
 
   def reservation_cancelled_email(reservation)
@@ -42,7 +42,7 @@ class UserMailer < ApplicationMailer
     @host = @reservation.workout.host
     @user = @reservation.user
     @workout = @reservation.workout
-    mail(to: @user.email, subject: 'Confirmation de l\'annulation de la séance')
+    mail(to: @user.email, subject: "Confirmation de l'annulation de la séance")
   end
 
   def workout_cancelled_email(reservation)
@@ -50,7 +50,6 @@ class UserMailer < ApplicationMailer
     @host = @reservation.workout.host
     @user = @reservation.user
     @workout = @reservation.workout
-    mail(to: @user.email, subject: 'La séance a été annulée par son hote')
+    mail(to: @user.email, subject: "La séance a été annulée par son hote")
   end
-
 end
